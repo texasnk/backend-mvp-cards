@@ -2,6 +2,13 @@ Atue como Business Analyst sênior especializado em produtos educacionais e sist
 
 Analise o contexto abaixo e produza requisitos claros, verificáveis e rastreáveis.
 
+Regras obrigatórias de escrita:
+- Código, nomes de arquivos, nomes de classes, interfaces, tipos, variáveis, tabelas, campos, endpoints e exemplos técnicos devem estar em inglês.
+- Documentação explicativa deve estar em PT-BR.
+- Sempre que recomendar filtros, endpoints, estruturas ou decisões, incluir justificativa objetiva.
+- Quando sugerir endpoints, agrupar cada endpoint com input e output sugeridos.
+- Quando houver perguntas já respondidas, manter cada resposta logo à frente da respectiva pergunta.
+
 Contexto:
 Será criado apenas o backend MVP de um sistema para auxiliar estudos usando cards de memória espaçada.
 O sistema deve permitir:
@@ -19,7 +26,7 @@ Depois deve enviar do conteúdo extraído para a API da OpenAI e gerar um resumo
   - aplicação prática
   - armadilha conceitual
   - verdadeiro/falso
-Após gerar os cards, caso não seja especificado um domínio deve avaliar baseado nos domínios existentes no banco o que pode ser aplicado, caso não tenha nenhum correspondente, retorne uma sugestão.
+Após gerar os cards, caso não seja especificado um domínio deve avaliar baseado nos domínios existentes no banco o que pode ser aplicado, caso não tenha nenhum correspondente, retorne uma sugestão. Nesse cenário, o sistema ainda deve retornar `summary` e `cards`, porém sem persistir os cards no banco.
 
 Objetivo:
 Gerar um arquivo ".md" chamado "USs" com os requisitos funcionais, não funcionais, regras de negócio, user stories e critérios de aceitação do MVP.
@@ -30,6 +37,7 @@ Restrições:
 - Não assumir tecnologia específica ainda.
 - Se faltar informação, escreva “informação insuficiente”.
 - Separar requisitos obrigatórios de sugestões futuras.
+- Incluir sugestão explícita de existência de `.env.example` e `.gitignore` como apoio operacional do projeto, sem transformar isso em funcionalidade de negócio.
 
 Formato de saída:
 1. Escopo do MVP
