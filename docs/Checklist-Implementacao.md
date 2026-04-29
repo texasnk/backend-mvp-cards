@@ -13,7 +13,7 @@
 |---|---|---|---|---|---|
 | 1 | Base técnica | EM ANDAMENTO |  | 2026-04-29 | Estrutura modular, contratos mínimos e base de persistência criados; ainda faltam `package.json`, `tsconfig.json`, configuração de testes, `docker-compose.yml`, `.env.example`, `README.md` e `LICENSE`. |
 | 2 | Domínio e persistência | CONCLUÍDO |  | 2026-04-29 | Entidades, migrations e repositórios iniciais implementados. |
-| 3 | Regras de negócio | TODO |  |  |  |
+| 3 | Regras de negócio | EM ANDAMENTO |  | 2026-04-29 | `DomainService`, `CardService` e a base de `ContentProcessingService` foram implementados com interfaces abstratas; adaptadores concretos e DTOs ainda pendentes. |
 | 4 | APIs e contratos | TODO |  |  |  |
 | 5 | Segurança e observabilidade | TODO |  |  |  |
 | 6 | Testes e aceite | TODO |  |  |  |
@@ -37,8 +37,8 @@
 | 13 | Domínio e persistência | Implementar repositório de domínios | CONCLUÍDO |  | 10 | `src/modules/domains/domain.repository.ts` | CRUD básico, busca por nome normalizado e listagem paginada. |
 | 14 | Domínio e persistência | Implementar repositório de cards | CONCLUÍDO |  | 11 | `src/modules/cards/card.repository.ts` | CRUD, listagem paginada, filtros por domínio, origem e abordagem. |
 | 15 | Domínio e persistência | Implementar repositório de processamento | CONCLUÍDO |  | 12 | `src/modules/processing/processing.repository.ts` | Suporta início, sucesso, sucesso sem persistência, falha e consulta. |
-| 16 | Regras de negócio | Implementar `DomainService` com unicidade por nome normalizado | TODO |  | 13 |  |  |
-| 17 | Regras de negócio | Implementar `CardService` com validação de domínio existente | TODO |  | 14, 16 |  |  |
+| 16 | Regras de negócio | Implementar `DomainService` com unicidade por nome normalizado | CONCLUÍDO |  | 13 | `src/modules/domains/domain.service.ts` | CRUD de serviço com validação de duplicidade e busca obrigatória por `id`. |
+| 17 | Regras de negócio | Implementar `CardService` com validação de domínio existente | CONCLUÍDO |  | 14, 16 | `src/modules/cards/card.service.ts` | CRUD manual e persistência interna de cards gerados via mesma camada. |
 | 18 | Regras de negócio | Definir DTOs e schemas de validação para domínios | TODO |  | 16 |  |  |
 | 19 | Regras de negócio | Definir DTOs e schemas de validação para cards | TODO |  | 17 |  |  |
 | 20 | Regras de negócio | Implementar sanitização e limites de entrada para texto puro | TODO |  | 3, 18, 19 |  |  |
@@ -46,7 +46,7 @@
 | 22 | Regras de negócio | Implementar conversão de PDF escaneado para imagem | TODO |  | 5, 21 |  |  |
 | 23 | Regras de negócio | Implementar OCR de imagem e OCR de PDF escaneado via OpenAI | TODO |  | 22 |  |  |
 | 24 | Regras de negócio | Implementar adaptador OpenAI para classificação, sugestão, resumo e cards | TODO |  | 3 |  |  |
-| 25 | Regras de negócio | Implementar `ContentProcessingService` com fluxo síncrono, timeout e persistência condicional | TODO |  | 15, 17, 20, 21, 23, 24 |  |  |
+| 25 | Regras de negócio | Implementar `ContentProcessingService` com fluxo síncrono, timeout e persistência condicional | EM ANDAMENTO |  | 15, 17, 20, 21, 23, 24 | `src/modules/processing/processing.service.ts` | A orquestração central e os contratos de dependência foram implementados; ainda faltam adaptadores concretos de arquivo/OpenAI e tratamento transacional real. |
 | 26 | APIs e contratos | Expor endpoints de CRUD de domínios | TODO |  | 16, 18 |  |  |
 | 27 | APIs e contratos | Expor endpoints de CRUD de cards | TODO |  | 17, 19 |  |  |
 | 28 | APIs e contratos | Expor endpoint `POST /api/v1/processings` | TODO |  | 25 |  |  |
@@ -81,5 +81,5 @@
 
 | Tipo | Descrição | Impacto | Responsável | Status | Observações |
 |---|---|---|---|---|---|
-| Decisão |  |  |  | TODO |  |
+| Decisão | `ContentProcessingService` recebe `domainMatchThreshold` por configuração em vez de fixar um valor no código nesta etapa. | Evita cristalizar um limiar de aderência sem decisão final de produto. |  | REGISTRADO | O valor concreto deverá ser definido quando a configuração tipada e o adaptador OpenAI forem implementados. |
 | Bloqueio |  |  |  | TODO |  |
