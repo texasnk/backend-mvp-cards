@@ -184,7 +184,7 @@ export class ContentProcessingService {
       const persistedCards = await this.cardService.persistGeneratedCards(
         studyMaterial.cards.map((card) => ({
           id: this.idGenerator.generate(),
-          studyDomainId: domainResolution?.domain?.id ?? '',
+          studyDomainId: domainResolution.domain.id,
           front: card.front,
           back: card.back,
           approach: card.approach,
