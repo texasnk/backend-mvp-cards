@@ -683,7 +683,7 @@ Dependências de sistema no container da API:
 |---|---|---|
 | `.env.example` | variáveis obrigatórias sem segredos reais | Acelera onboarding local e reduz erro de configuração entre ambientes. |
 | `.gitignore` | `node_modules`, `.env`, logs, cobertura, temporários e artefatos de build | Evita vazamento de segredo e ruído de versionamento. |
-| `README.md` | contexto do projeto, instruções de uso, setup local e decisões principais do MVP | Reduz dependência de conhecimento tácito e acelera onboarding técnico. |
+| `README.md` | contexto do projeto, instruções de uso, setup local, decisões principais do MVP e lista das bibliotecas utilizadas com a função de cada uma no projeto | Reduz dependência de conhecimento tácito, acelera onboarding técnico e deixa explícito o papel de cada dependência adotada no MVP. |
 
 ## 16. Riscos técnicos
 

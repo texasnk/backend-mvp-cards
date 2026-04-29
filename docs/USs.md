@@ -76,7 +76,7 @@
 | RF-31 | Quando um PDF não permitir extração textual direta por se tratar de imagem, o sistema deve enviar o conteúdo à OpenAI e aguardar o retorno do texto para continuidade do processamento. | Obrigatório | US-03, CA-03 |
 | RF-32 | O projeto deve disponibilizar `.env.example` com as variáveis mínimas necessárias para execução local. | Obrigatório | |
 | RF-33 | O projeto deve disponibilizar `.gitignore` adequado para evitar versionamento de segredos, artefatos temporários e dependências locais. | Obrigatório | |
-| RF-34 | O projeto deve disponibilizar `README.md` com contexto do projeto, instruções de uso e orientações mínimas para execução local. | Obrigatório | |
+| RF-34 | O projeto deve disponibilizar `README.md` com contexto do projeto, instruções de uso, orientações mínimas para execução local e lista das bibliotecas utilizadas com a função de cada uma no projeto. | Obrigatório | |
 
 # 4. Requisitos não funcionais
 
