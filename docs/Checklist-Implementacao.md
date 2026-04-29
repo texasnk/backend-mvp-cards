@@ -14,7 +14,7 @@
 | 1 | Base técnica | EM ANDAMENTO |  | 2026-04-29 | Estrutura modular, contratos mínimos e base de persistência criados; ainda faltam `package.json`, `tsconfig.json`, configuração de testes, `docker-compose.yml`, `.env.example`, `README.md` e `LICENSE`. |
 | 2 | Domínio e persistência | CONCLUÍDO |  | 2026-04-29 | Entidades, migrations e repositórios iniciais implementados. |
 | 3 | Regras de negócio | EM ANDAMENTO |  | 2026-04-29 | `DomainService`, `CardService` e a base de `ContentProcessingService` foram implementados com interfaces abstratas; adaptadores concretos e DTOs ainda pendentes. |
-| 4 | APIs e contratos | TODO |  |  |  |
+| 4 | APIs e contratos | EM ANDAMENTO |  | 2026-04-29 | Controllers, rotas e `app` mínimo foram implementados; processamento HTTP ainda está limitado ao payload JSON com `text` até a etapa de integrações de arquivo. |
 | 5 | Segurança e observabilidade | TODO |  |  |  |
 | 6 | Testes e aceite | TODO |  |  |  |
 
@@ -39,19 +39,19 @@
 | 15 | Domínio e persistência | Implementar repositório de processamento | CONCLUÍDO |  | 12 | `src/modules/processing/processing.repository.ts` | Suporta início, sucesso, sucesso sem persistência, falha e consulta. |
 | 16 | Regras de negócio | Implementar `DomainService` com unicidade por nome normalizado | CONCLUÍDO |  | 13 | `src/modules/domains/domain.service.ts` | CRUD de serviço com validação de duplicidade e busca obrigatória por `id`. |
 | 17 | Regras de negócio | Implementar `CardService` com validação de domínio existente | CONCLUÍDO |  | 14, 16 | `src/modules/cards/card.service.ts` | CRUD manual e persistência interna de cards gerados via mesma camada. |
-| 18 | Regras de negócio | Definir DTOs e schemas de validação para domínios | TODO |  | 16 |  |  |
-| 19 | Regras de negócio | Definir DTOs e schemas de validação para cards | TODO |  | 17 |  |  |
+| 18 | Regras de negócio | Definir DTOs e schemas de validação para domínios | CONCLUÍDO |  | 16 | `src/modules/domains/domain.schemas.ts` | Parsing e validação mínima de `body`, `params` e `query` implementados sem dependência externa nesta etapa. |
+| 19 | Regras de negócio | Definir DTOs e schemas de validação para cards | CONCLUÍDO |  | 17 | `src/modules/cards/card.schemas.ts` | Parsing e validação mínima de `body`, `params` e `query` implementados sem dependência externa nesta etapa. |
 | 20 | Regras de negócio | Implementar sanitização e limites de entrada para texto puro | TODO |  | 3, 18, 19 |  |  |
 | 21 | Regras de negócio | Implementar extração textual de PDF pesquisável | TODO |  | 5 |  |  |
 | 22 | Regras de negócio | Implementar conversão de PDF escaneado para imagem | TODO |  | 5, 21 |  |  |
 | 23 | Regras de negócio | Implementar OCR de imagem e OCR de PDF escaneado via OpenAI | TODO |  | 22 |  |  |
 | 24 | Regras de negócio | Implementar adaptador OpenAI para classificação, sugestão, resumo e cards | TODO |  | 3 |  |  |
 | 25 | Regras de negócio | Implementar `ContentProcessingService` com fluxo síncrono, timeout e persistência condicional | EM ANDAMENTO |  | 15, 17, 20, 21, 23, 24 | `src/modules/processing/processing.service.ts` | A orquestração central e os contratos de dependência foram implementados; ainda faltam adaptadores concretos de arquivo/OpenAI e tratamento transacional real. |
-| 26 | APIs e contratos | Expor endpoints de CRUD de domínios | TODO |  | 16, 18 |  |  |
-| 27 | APIs e contratos | Expor endpoints de CRUD de cards | TODO |  | 17, 19 |  |  |
-| 28 | APIs e contratos | Expor endpoint `POST /api/v1/processings` | TODO |  | 25 |  |  |
-| 29 | APIs e contratos | Expor `health/live`, `health/ready` e `metrics` | TODO |  | 3, 12 |  |  |
-| 30 | APIs e contratos | Padronizar tratamento de erros, status codes e mensagens seguras | TODO |  | 26, 27, 28 |  |  |
+| 26 | APIs e contratos | Expor endpoints de CRUD de domínios | CONCLUÍDO |  | 16, 18 | `src/modules/domains/domain.controller.ts`, `src/app/routes/api.routes.ts` | Endpoints `POST/GET/PATCH/DELETE` de domínios foram expostos conforme a arquitetura. |
+| 27 | APIs e contratos | Expor endpoints de CRUD de cards | CONCLUÍDO |  | 17, 19 | `src/modules/cards/card.controller.ts`, `src/app/routes/api.routes.ts` | Endpoints `POST/GET/PATCH/DELETE` de cards foram expostos conforme a arquitetura. |
+| 28 | APIs e contratos | Expor endpoint `POST /api/v1/processings` | EM ANDAMENTO |  | 25 | `src/modules/processing/processing.controller.ts`, `src/modules/processing/processing.schemas.ts` | Endpoint exposto para payload JSON com `text`; suporte a `multipart/form-data` depende das integrações e middlewares posteriores. |
+| 29 | APIs e contratos | Expor `health/live`, `health/ready` e `metrics` | CONCLUÍDO |  | 3, 12 | `src/app/routes/api.routes.ts` | Endpoints mínimos expostos; `ready` e `metrics` ainda usam respostas placeholder até observabilidade e configuração real. |
+| 30 | APIs e contratos | Padronizar tratamento de erros, status codes e mensagens seguras | EM ANDAMENTO |  | 26, 27, 28 | `src/app/errors/http-error-handler.ts` | Há tratamento HTTP mínimo para `AppError`; a taxonomia completa permanece pendente. |
 | 31 | APIs e contratos | Implementar `requestId`, correlação e resposta padronizada | TODO |  | 26, 27, 28, 30 |  |  |
 | 32 | Segurança e observabilidade | Implementar rate limiting e whitelisting de campos atualizáveis | TODO |  | 26, 27, 28, 31 |  |  |
 | 33 | Segurança e observabilidade | Implementar upload seguro com validação de MIME, extensão, tamanho, resolução e páginas | TODO |  | 21, 22, 28 |  |  |
@@ -82,4 +82,5 @@
 | Tipo | Descrição | Impacto | Responsável | Status | Observações |
 |---|---|---|---|---|---|
 | Decisão | `ContentProcessingService` recebe `domainMatchThreshold` por configuração em vez de fixar um valor no código nesta etapa. | Evita cristalizar um limiar de aderência sem decisão final de produto. |  | REGISTRADO | O valor concreto deverá ser definido quando a configuração tipada e o adaptador OpenAI forem implementados. |
+| Decisão | O endpoint de processamento HTTP foi limitado provisoriamente a JSON com `text`, mesmo já mantendo a rota final `/api/v1/processings`. | Evita simular suporte incompleto a upload antes da implementação real de `multipart`, OCR e validação de arquivo. |  | REGISTRADO | O suporte a `multipart/form-data` deve ser concluído junto das etapas de integração e segurança de upload. |
 | Bloqueio |  |  |  | TODO |  |
