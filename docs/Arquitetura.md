@@ -90,6 +90,11 @@ Express API
 ## 5. Estrutura lógica sugerida
 
 ```text
+package.json
+tsconfig.json
+jest.config.ts (ou equivalente)
+docker-compose.yml
+LICENSE
 src/
   app/
     server.ts
@@ -136,6 +141,23 @@ src/
 tests/
 docker/
 ```
+
+## 5.1 Artefatos obrigatórios do repositório
+
+Além da árvore de código, o MVP deve incluir artefatos versionados suficientes para execução local e evolução básica do projeto:
+
+- `package.json` com scripts mínimos de `dev`, `build`, `test` e `start`.
+- `tsconfig.json` compatível com a estrutura modular em `src/`.
+- configuração de testes automatizados, como `jest.config.ts` ou equivalente adotado pelo projeto.
+- `.env.example` com variáveis mínimas documentadas.
+- `.gitignore` adequado para Node.js, TypeScript, segredos e artefatos temporários.
+- `README.md` com setup local, uso e dependências adotadas.
+- `docker-compose.yml` com `postgres` obrigatório e `api` recomendado no MVP.
+- `LICENSE` com texto da licença MIT.
+
+Decisão recomendada:
+
+- Tratar esses artefatos como parte da definição de pronto da base técnica, e não como documentação opcional.
 
 ## 6. Fluxo de dados
 
@@ -392,6 +414,22 @@ Motivos:
 ### Alternativa futura
 
 Persistir artefatos em object storage com criptografia e política de retenção se auditoria funcional passar a exigir reprocessamento.
+
+## 8.5 Infraestrutura local e toolchain
+
+O projeto deve ser inicializável localmente sem configuração implícita fora do repositório.
+
+Artefatos mínimos esperados:
+
+- `package.json` para gerenciar dependências, scripts e metadados do serviço.
+- `tsconfig.json` para compilar TypeScript de forma determinística.
+- configuração de testes para permitir execução automatizada via script do projeto.
+- `docker-compose.yml` para subir pelo menos o `postgres` localmente; a inclusão do serviço `api` no compose é a opção preferida do MVP.
+- `LICENSE` MIT para explicitar o regime de uso e distribuição do código.
+
+Critério arquitetural:
+
+- um colaborador deve conseguir instalar dependências, subir o banco local e executar os comandos principais do backend apenas com os arquivos versionados e as instruções do `README.md`.
 
 ## 9. Integração com OpenAI
 

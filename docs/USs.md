@@ -21,7 +21,7 @@
 - Retornar os cards gerados mesmo quando não houver domínio aderente, sem persisti-los no banco.
 - Retornar o resumo geral na resposta, sem persistência.
 - Operar em idioma PT-BR para resumo, cards e sugestão de domínio.
-- Adotar artefatos operacionais mínimos como `.env.example`, `.gitignore` e `README.md`.
+- Adotar artefatos operacionais mínimos como `package.json`, `tsconfig.json`, configuração de testes, `.env.example`, `.gitignore`, `README.md`, `docker-compose.yml` e licença MIT.
 
 ## Sugestões futuras
 
@@ -77,6 +77,11 @@
 | RF-32 | O projeto deve disponibilizar `.env.example` com as variáveis mínimas necessárias para execução local. | Obrigatório | |
 | RF-33 | O projeto deve disponibilizar `.gitignore` adequado para evitar versionamento de segredos, artefatos temporários e dependências locais. | Obrigatório | |
 | RF-34 | O projeto deve disponibilizar `README.md` com contexto do projeto, instruções de uso, orientações mínimas para execução local e lista das bibliotecas utilizadas com a função de cada uma no projeto. | Obrigatório | |
+| RF-35 | O projeto deve disponibilizar `package.json` com metadados, dependências mínimas e scripts para desenvolvimento, build, testes e execução local. | Obrigatório | |
+| RF-36 | O projeto deve disponibilizar `tsconfig.json` compatível com `Node.js + TypeScript` e com a estrutura modular proposta para o backend. | Obrigatório | |
+| RF-37 | O projeto deve disponibilizar configuração de testes automatizados, incluindo arquivo de configuração do runner e convenção mínima para execução via script do projeto. | Obrigatório | |
+| RF-38 | O projeto deve disponibilizar `docker-compose.yml` para subir ao menos o banco PostgreSQL localmente e, no MVP, preferencialmente também o serviço da API. | Obrigatório | |
+| RF-39 | O projeto deve disponibilizar arquivo `LICENSE` com licença MIT. | Obrigatório | |
 
 # 4. Requisitos não funcionais
 
@@ -99,6 +104,7 @@
 | RNF-15 | O sistema deve ser estruturado para permitir evolução futura sem acoplamento explícito a tecnologia de OCR, banco ou provedor de IA. | Obrigatório | |
 | RNF-16 | A resolução máxima aceita para imagens enviadas ao processamento deve ser 720p. | Obrigatório | |
 | RNF-17 | Em caso de erro, a API deve retornar status code compatível com a falha e mensagem objetiva, sem incluir informação sensível. | Obrigatório | |
+| RNF-18 | O projeto deve ser executável localmente de forma reprodutível a partir dos artefatos versionados de configuração, build, teste e infraestrutura. | Obrigatório | Inclui `package.json`, `tsconfig.json`, config de testes e `docker-compose.yml` |
 
 # 5. Regras de negócio
 
@@ -145,6 +151,7 @@
 | CA-08 | Dado um PDF baseado em imagem, quando a extração textual direta falhar, então o sistema deve enviar o conteúdo à OpenAI para retorno do texto antes da geração do resumo e dos cards. | US-03 |
 | CA-09 | Dado falha na integração com serviço externo necessário para extração, OCR ou geração, quando a operação não puder ser concluída, então o sistema deve retornar status code compatível, mensagem objetiva sem informação sensível e não persistir dados parciais inconsistentes. | US-03, US-04 |
 | CA-10 | Dada uma chamada à OpenAI com duração superior a 30 segundos, quando o limite for atingido, então a operação deve ser cancelada e deve retornar exceção. | US-03, US-04 |
+| CA-11 | Dado o repositório do projeto, quando um desenvolvedor preparar o ambiente local, então deve encontrar `package.json`, `tsconfig.json`, configuração de testes, `.env.example`, `.gitignore`, `README.md`, `docker-compose.yml` e `LICENSE`, com instruções suficientes para subir ao menos o banco PostgreSQL e executar os comandos principais do projeto. | RF-32 a RF-39, RNF-18 |
 
 # 8. Ambiguidades
 
