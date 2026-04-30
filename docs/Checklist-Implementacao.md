@@ -15,8 +15,8 @@
 | 2 | Domínio e persistência | CONCLUÍDO |  | 2026-04-29 | Entidades, migrations e repositórios iniciais implementados. |
 | 3 | Regras de negócio | EM ANDAMENTO |  | 2026-04-29 | `DomainService`, `CardService` e a base de `ContentProcessingService` foram implementados com interfaces abstratas; adaptadores concretos e DTOs ainda pendentes. |
 | 4 | APIs e contratos | EM ANDAMENTO |  | 2026-04-29 | Controllers, rotas e `app` mínimo foram implementados; processamento HTTP ainda está limitado ao payload JSON com `text` até a etapa de integrações de arquivo. |
-| 5 | Segurança e observabilidade | TODO |  |  |  |
-| 6 | Testes e aceite | TODO |  |  |  |
+| 5 | Segurança e observabilidade | EM ANDAMENTO |  | 2026-04-29 | `requestId`, logging, métricas em memória, headers de segurança, CORS e rate limit básico foram implementados; upload seguro e hardening completo ainda pendentes. |
+| 6 | Testes e aceite | EM ANDAMENTO |  | 2026-04-29 | Testes unitários base foram adicionados, mas ainda não executados por falta da etapa 1. |
 
 ## Ordem de implementação detalhada
 
@@ -52,14 +52,14 @@
 | 28 | APIs e contratos | Expor endpoint `POST /api/v1/processings` | EM ANDAMENTO |  | 25 | `src/modules/processing/processing.controller.ts`, `src/modules/processing/processing.schemas.ts` | Endpoint exposto para payload JSON com `text`; suporte a `multipart/form-data` depende das integrações e middlewares posteriores. |
 | 29 | APIs e contratos | Expor `health/live`, `health/ready` e `metrics` | CONCLUÍDO |  | 3, 12 | `src/app/routes/api.routes.ts` | Endpoints mínimos expostos; `ready` e `metrics` ainda usam respostas placeholder até observabilidade e configuração real. |
 | 30 | APIs e contratos | Padronizar tratamento de erros, status codes e mensagens seguras | EM ANDAMENTO |  | 26, 27, 28 | `src/app/errors/http-error-handler.ts` | Há tratamento HTTP mínimo para `AppError`; a taxonomia completa permanece pendente. |
-| 31 | APIs e contratos | Implementar `requestId`, correlação e resposta padronizada | TODO |  | 26, 27, 28, 30 |  |  |
-| 32 | Segurança e observabilidade | Implementar rate limiting e whitelisting de campos atualizáveis | TODO |  | 26, 27, 28, 31 |  |  |
-| 33 | Segurança e observabilidade | Implementar upload seguro com validação de MIME, extensão, tamanho, resolução e páginas | TODO |  | 21, 22, 28 |  |  |
-| 34 | Segurança e observabilidade | Implementar proteção contra prompt injection indireta e validação da resposta da IA | TODO |  | 23, 24, 25 |  |  |
-| 35 | Segurança e observabilidade | Implementar logs estruturados com sanitização e correlação por `requestId` | TODO |  | 30, 31 |  |  |
-| 36 | Segurança e observabilidade | Implementar métricas HTTP, de processamento e de chamadas OpenAI | TODO |  | 24, 25, 29, 35 |  |  |
-| 37 | Testes e aceite | Implementar testes unitários de domínios, cards e validadores | TODO |  | 16, 17, 18, 19 |  |  |
-| 38 | Testes e aceite | Implementar testes unitários de `ContentProcessingService` com mocks determinísticos | TODO |  | 25 |  |  |
+| 31 | APIs e contratos | Implementar `requestId`, correlação e resposta padronizada | CONCLUÍDO |  | 26, 27, 28, 30 | `src/app/middlewares/request-id.middleware.ts`, `src/app/errors/http-error-handler.ts` | `requestId` é propagado por header e o error handler já responde em payload consistente mínimo. |
+| 32 | Segurança e observabilidade | Implementar rate limiting e whitelisting de campos atualizáveis | CONCLUÍDO |  | 26, 27, 28, 31 | `src/app/middlewares/rate-limit.middleware.ts`, `src/modules/*/*.schemas.ts` | Rate limit básico por IP aplicado ao processamento; `PATCH` segue whitelist dos schemas. |
+| 33 | Segurança e observabilidade | Implementar upload seguro com validação de MIME, extensão, tamanho, resolução e páginas | EM ANDAMENTO |  | 21, 22, 28 | `src/providers/files/mime-validator.ts` | Validação de MIME/extensão foi criada; limites de upload multipart, resolução e páginas ainda não foram ligados ao endpoint HTTP. |
+| 34 | Segurança e observabilidade | Implementar proteção contra prompt injection indireta e validação da resposta da IA | EM ANDAMENTO |  | 23, 24, 25 | `src/modules/processing/prompt-builder.ts`, `src/providers/ai/openai.generator.ts`, `src/providers/files/text-sanitizer.ts` | Há sanitização, prompts controlados e validação estrutural; faltam limites finais por configuração e testes negativos dedicados. |
+| 35 | Segurança e observabilidade | Implementar logs estruturados com sanitização e correlação por `requestId` | CONCLUÍDO |  | 30, 31 | `src/shared/logger/logger.ts`, `src/app/middlewares/request-logging.middleware.ts` | Logs JSON básicos com sanitização e correlação mínima implementados. |
+| 36 | Segurança e observabilidade | Implementar métricas HTTP, de processamento e de chamadas OpenAI | EM ANDAMENTO |  | 24, 25, 29, 35 | `src/shared/telemetry/metrics.ts`, `src/app/routes/api.routes.ts` | Métricas HTTP e exposição em `/metrics` foram implementadas; faltam métricas específicas de processamento e OpenAI ligadas nos serviços. |
+| 37 | Testes e aceite | Implementar testes unitários de domínios, cards e validadores | EM ANDAMENTO |  | 16, 17, 18, 19 | `tests/domain.service.test.ts`, `tests/card.service.test.ts` | Testes unitários base adicionados; ainda faltam validadores de forma mais ampla e execução real. |
+| 38 | Testes e aceite | Implementar testes unitários de `ContentProcessingService` com mocks determinísticos | EM ANDAMENTO |  | 25 | `tests/processing.service.test.ts` | Mock determinístico inicial adicionado; ainda faltam cenários completos de classificação, sugestão e persistência. |
 | 39 | Testes e aceite | Implementar testes de integração dos CRUDs de domínios e cards | TODO |  | 26, 27, 37 |  |  |
 | 40 | Testes e aceite | Implementar testes de integração do endpoint de processamento | TODO |  | 28, 32, 33, 38 |  |  |
 | 41 | Testes e aceite | Implementar testes negativos de segurança e falha externa | TODO |  | 32, 33, 34, 40 |  |  |
@@ -84,4 +84,5 @@
 | Decisão | `ContentProcessingService` recebe `domainMatchThreshold` por configuração em vez de fixar um valor no código nesta etapa. | Evita cristalizar um limiar de aderência sem decisão final de produto. |  | REGISTRADO | O valor concreto deverá ser definido quando a configuração tipada e o adaptador OpenAI forem implementados. |
 | Decisão | O endpoint de processamento HTTP foi limitado provisoriamente a JSON com `text`, mesmo já mantendo a rota final `/api/v1/processings`. | Evita simular suporte incompleto a upload antes da implementação real de `multipart`, OCR e validação de arquivo. |  | REGISTRADO | O suporte a `multipart/form-data` deve ser concluído junto das etapas de integração e segurança de upload. |
 | Decisão | Os adaptadores de PDF dependem de binários do sistema (`pdftotext` e `pdftoppm`) em vez de biblioteca Node nesta etapa. | Mantém aderência ao documento arquitetural e reduz acoplamento prematuro a pacotes ainda não instalados. |  | REGISTRADO | A disponibilidade real desses binários será garantida quando `docker-compose.yml` e a imagem da API forem implementados. |
+| Decisão | As métricas desta etapa foram implementadas inicialmente em registro local em memória, com saída texto estilo Prometheus. | Permite fechar observabilidade básica agora sem depender de bibliotecas ainda não instaladas. |  | REGISTRADO | Pode ser substituído por `prom-client` quando a base técnica estiver pronta. |
 | Bloqueio |  |  |  | TODO |  |
