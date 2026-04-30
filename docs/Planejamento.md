@@ -1,0 +1,138 @@
+## 1. Escopo confirmado
+
+### Fatos confirmados
+
+- Backend MVP em monólito modular com `Node.js + TypeScript`, API REST em `Express`, validação com `Joi`, banco `PostgreSQL` e execução local via `Docker Compose`.
+- O backend deve manter CRUD de `study_domains`.
+- O backend deve manter CRUD de `cards` manuais vinculados a um domínio existente.
+- A mesma camada de serviço de cards deve ser reutilizada para persistência interna de cards gerados.
+- O processamento deve aceitar exatamente uma origem por requisição: `text`, `image` ou `pdf`.
+- O processamento deve ser síncrono.
+- O processamento deve aceitar `domainId` opcional e `cardsCount` com mínimo `1`, máximo `10` e padrão `3`.
+- O sistema deve extrair texto de PDF textual localmente.
+- O sistema deve aplicar OCR via OpenAI para imagens.
+- O sistema deve enviar o conteúdo textual obtido à OpenAI para classificação de domínio, sugestão de domínio, geração de resumo e geração de cards.
+- O sistema deve operar em PT-BR para resumo, cards e sugestão de domínio.
+- O sistema deve persistir apenas `study_domains`, `cards` e `processing_requests`.
+- O sistema não deve persistir texto extraído bruto, resumo nem arquivo original.
+- Os endpoints sugeridos incluem `/api/v1/domains`, `/api/v1/cards`, `/api/v1/processings`, `/api/v1/health/live`, `/api/v1/health/ready` e `/api/v1/metrics`.
+- O sistema deve registrar rastreabilidade por `requestId` e auditoria técnica mínima em `processing_requests`.
+- Há exigência de timeout de `30s` para chamadas críticas e para o fluxo síncrono de extração/OCR/geração.
+- Há exigência de segurança alinhada a OWASP Top 10:2025 e OWASP API Security Top 10:2023, com destaque para upload seguro, validação de entrada, tratamento seguro de erro, logging seguro, rate limiting e proteção contra prompt injection.
+- O repositório deve incluir `package.json`, `tsconfig.json`, configuração de testes, `docker-compose.yml` para ambiente local e `LICENSE` MIT como parte da base técnica obrigatória.
+
+### Inferências necessárias
+
+- A implementação deve começar pela base transversal de configuração, tipagem, contratos e infraestrutura local antes de qualquer regra de negócio, porque as camadas posteriores dependem desses artefatos.
+- O endpoint de processamento precisa ser planejado em torno de transação de persistência, pois os artefatos exigem evitar dados parciais inconsistentes.
+
+### Sugestões opcionais já documentadas
+
+- Usar `pino` ou equivalente para logs estruturados.
+- Usar `prom-client` para métricas.
+- Usar `multer`, `file-type` e `sharp` no MVP.
+
+## 2. Lacunas e ambiguidades
+
+| Item | Impacto | Pergunta ou decisão necessária |
+|---|---|---|
+| Critério objetivo de aderência mínima para classificar um domínio existente | Impacta regra de persistência automática e previsibilidade do fluxo `US-04` | Definir limiar objetivo de aderência para considerar um domínio como resolvido. |
+| Formato específico do contrato de erro da API | Impacta padronização de responses, testes e observabilidade | Informação insuficiente. |
+| Tecnologia específica para correlação distribuída além de `requestId` | Impacta desenho de observabilidade | Informação insuficiente. |
+| Ferramenta específica para registro operacional de falhas | Impacta padronização de logs e métricas | Informação insuficiente. |
+| Mecanismo exato de proteção de dados em trânsito | Impacta definição de responsabilidade entre aplicação, container e infraestrutura | Informação insuficiente. | 
+| Critério objetivo para “conteúdo utilizável” após extração/OCR | Impacta comportamento de borda no processamento | Definir regra mínima verificável para aceitar ou rejeitar o texto extraído. | 
+
+## 3. Estratégia de implementação
+
+A ordem adotada parte da base operacional e contratos transversais, depois fixa domínio e persistência, em seguida implementa regras de negócio puras, integrações externas e só então expõe controllers. O tratamento de erros vem antes de observabilidade porque logs e métricas dependem de códigos e respostas padronizados. Segurança OWASP entra antes da validação final das APIs para evitar retrabalho em upload, limites e tratamento de entrada. Testes são distribuídos por nível após a estabilização da camada correspondente. Os agrupamentos seguem a árvore de dependências do próprio documento arquitetural: configuração -> domínio -> banco -> repositórios -> services -> DTOs/validação -> integrações -> endpoints -> erros -> segurança -> observabilidade -> testes -> documentação -> aceite.
+
+## 4. Checklist priorizado de implementação
+
+| Ordem | Fase | Tarefa | Dependência anterior | Referência | Critério de aceite | Prioridade |
+|---|---|---|---|---|---|---|
+| 1 | Preparação do projeto | Definir a estrutura modular de pastas e módulos backend conforme a arquitetura sugerida | Nenhuma | Fato confirmado: Arquitetura seções 3, 5 e 20 | Estrutura de diretórios criada e coerente com módulos `domains`, `cards`, `processing`, `providers`, `shared` e `tests` | Alta |
+| 2 | Preparação do projeto | Definir os contratos técnicos mínimos do MVP em inglês para entidades, enums lógicos e convenções de rotas | 1 | Fato confirmado: Arquitetura seções 2, 7 e 8; RNF-14 | Tipos e convenções documentados internamente e reutilizáveis pelas camadas seguintes | Alta |
+| 3 | Configuração de ambiente | Configurar módulo tipado de ambiente com validação das variáveis mínimas obrigatórias | 1, 2 | Fato confirmado: Arquitetura seção 15; RF-32 | A aplicação falha no bootstrap quando variável obrigatória está ausente e aceita os defaults documentados | Alta |
+| 4 | Configuração de ambiente | Definir `package.json`, scripts do projeto, `tsconfig.json` e configuração de testes automatizados | 1, 2 | Fato confirmado: RF-35, RF-36, RF-37, RNF-18 | O repositório possui dependências e scripts mínimos de `dev`, `build`, `test` e `start`, compilação TypeScript coerente e configuração de testes executável via script | Alta |
+| 5 | Configuração de ambiente | Configurar `docker-compose.yml` com serviços `api` e `postgres` e dependências de sistema do processamento de arquivos | 3, 4 | Fato confirmado: Arquitetura seções 2, 8.5, 13 e 15; RF-38 | Ambiente local sobe com os dois serviços e disponibiliza dependências do fluxo PDF/imagem | Alta |
+| 6 | Configuração de ambiente | Definir artefatos operacionais mínimos `.env.example`, `.gitignore`, `README.md` e `LICENSE` MIT | 3, 4, 5 | Fato confirmado: RF-32, RF-33, RF-34, RF-39; Arquitetura seção 8.5 | Os artefatos existem, o `README.md` inclui contexto, uso, setup local e bibliotecas adotadas, e `LICENSE` explicita a licença MIT | Média |
+| 7 | Modelagem de domínio | Modelar a entidade `study_domain` com regras de nome, normalização e unicidade | 2 | Fato confirmado: RF-01 a RF-05; Arquitetura seção 8.2 | Modelo contempla `id`, `name`, `nameNormalized`, timestamps e regra de tamanho `3-40` | Alta |
+| 8 | Modelagem de domínio | Modelar a entidade `card` com vínculo obrigatório ao domínio, tipo de origem e enum de abordagem | 2, 7 | Fato confirmado: RF-06 a RF-10, RF-21, RB-01 a RB-07; Arquitetura seção 8.3 | Modelo contempla `studyDomainId`, `sourceType`, `approach`, `front`, `back` e timestamps com restrições descritas | Alta |
+| 9 | Modelagem de domínio | Modelar a entidade `processing_request` para trilha técnica mínima do processamento | 2 | Fato confirmado: Arquitetura seção 8.4; RNF-03, RNF-04 | Modelo contempla status, contadores, domínio informado/resolvido, falha sanitizada e timestamps | Alta |
+| 10 | Banco de dados e migrations | Criar migration de `study_domains` com unicidade por `name_normalized` | 7 | Fato confirmado: Arquitetura seção 8.2 | Tabela criada com PK UUID, colunas esperadas e constraint `unique(name_normalized)` | Alta |
+| 11 | Banco de dados e migrations | Criar migration de `cards` com FK obrigatória para `study_domains` | 8, 10 | Fato confirmado: Arquitetura seção 8.3; RB-01 | Tabela criada com FK não nula, colunas esperadas e enum lógico representado conforme contrato técnico | Alta |
+| 12 | Banco de dados e migrations | Criar migration de `processing_requests` com campos de auditoria técnica mínima | 9, 10 | Fato confirmado: Arquitetura seção 8.4 | Tabela criada com colunas esperadas para status, contagem, falhas e timestamps | Alta |
+| 13 | Repositories / persistência | Implementar repositório de domínios com busca por `id`, listagem paginada, busca por nome e unicidade normalizada | 10 | Fato confirmado: Arquitetura seções 4, 6.1 e 7.2; US-01 | Repositório suporta as operações necessárias sem expor SQL fora da camada | Alta |
+| 14 | Repositories / persistência | Implementar repositório de cards com CRUD, listagem paginada e filtros confirmados | 11, 13 | Fato confirmado: Arquitetura seções 4, 7.2 e 7.3; US-02 | Repositório suporta filtro por `studyDomainId`, `sourceType`, `approach`, paginação e exclusão por `id` | Alta |
+| 15 | Repositories / persistência | Implementar repositório de `processing_requests` para registrar início, sucesso, falha e sucesso sem persistência | 12 | Fato confirmado: Arquitetura seções 4, 6.3 e 8.4 | Repositório atualiza status e metadados do processamento sem persistir conteúdo sensível | Alta |
+| 16 | Services / regras de negócio | Implementar `DomainService` com regras de unicidade e manutenção de domínios | 13 | Fato confirmado: Arquitetura seção 6.1; RF-01 a RF-05 | Serviço impede duplicidade por nome normalizado e executa CRUD conforme `CA-01` | Alta |
+| 17 | Services / regras de negócio | Implementar `CardService` para CRUD manual, validação de domínio existente e reutilização para persistência interna de cards gerados | 14, 16 | Fato confirmado: RF-06 a RF-10, RF-22, RB-03 | Serviço cria e mantém cards manuais e expõe operação interna para persistir cards gerados com `sourceType=generated` | Alta |
+| 18 | DTOs e validações | Definir schemas de domínio para body, params e query do CRUD de domínios | 16 | Fato confirmado: Arquitetura seções 4 e 6.1; RNF-02 | Schemas rejeitam payload inválido e produzem mensagens determinísticas para CRUD de domínios | Alta |
+| 19 | DTOs e validações | Definir schemas de card para body, params e query do CRUD de cards | 17 | Fato confirmado: Arquitetura seções 4 e 6.2; RF-10; RNF-02 | Schemas validam `front`, `back`, `approach`, filtros confirmados e mensagens determinísticas | Alta |
+| 20 | DTOs e validações | Definir contratos e schemas do processamento para `text`, `multipart`, `domainId`, `cardsCount` e resposta estruturada | 9, 15, 17 | Fato confirmado: Arquitetura seções 6.3, 7.4 e 9.4; RF-14, RF-20 | Schemas garantem origem única, limites confirmados e contrato de saída consistente | Alta |
+| 21 | Integrações externas | Implementar provedores de arquivo para validar MIME/extensão, gerenciar temporários e sanitizar texto de entrada | 20 | Fato confirmado: Arquitetura seções 5, 10.1, 10.3 e 11.3 | Upload inválido é rejeitado, arquivos temporários são apagados e texto é sanitizado sem persistência bruta | Alta |
+| 22 | Integrações externas | Implementar extração textual local de PDF | 21 | Fato confirmado: RF-11, RF-31; Arquitetura seções 6.3 e 10.2 | PDF textual retorna texto; PDF sem texto utilizável é rejeitado | Alta |
+| 23 | Integrações externas | Implementar adaptador próprio da OpenAI com timeout, cancelamento, retry transitório e validação estruturada | 20 | Fato confirmado: Arquitetura seção 9; RNF-08, RNF-09, RNF-15 | Adaptador cancela chamadas acima de `30s`, limita retry transitório e valida respostas por schema antes de retornar | Alta |
+| 24 | Services / regras de negócio | Implementar orquestração de resolução de domínio para usar domínio informado ou classificar entre domínios existentes | 16, 23 | Fato confirmado: RF-15 a RF-18, RF-24 a RF-29; RB-08 a RB-13 | Serviço rejeita domínio inválido, classifica apenas entre domínios existentes e retorna sugestão sem criar domínio automaticamente | Alta |
+| 25 | Services / regras de negócio | Implementar `ContentProcessingService` para extrair texto, validar conteúdo utilizável, gerar resumo/cards e controlar persistência transacional | 15, 17, 20, 22, 23, 24 | Fato confirmado: Arquitetura seção 6.3; CA-03 a CA-10 | Serviço conclui todo o fluxo síncrono, não persiste resumo, não persiste cards sem domínio resolvido e não deixa dados parciais inconsistentes | Alta |
+| 26 | Controllers / endpoints | Implementar controllers e rotas de domínios sobre `DomainService` e schemas da camada de validação | 16, 18 | Fato confirmado: Arquitetura seção 7.2; US-01 | Endpoints de domínio respondem com contratos consistentes e status compatíveis com `CA-01` | Alta |
+| 27 | Controllers / endpoints | Implementar controllers e rotas de cards sobre `CardService` e schemas da camada de validação | 17, 19 | Fato confirmado: Arquitetura seção 7.2; US-02 | Endpoints de card respondem com contratos consistentes e status compatíveis com `CA-02` | Alta |
+| 28 | Controllers / endpoints | Implementar controller e rota de processamento unificado para `text` e `multipart/form-data` | 25 | Fato confirmado: Arquitetura seções 7.2, 7.4 e 7.5; US-03, US-04 | Endpoint aceita uma única origem, retorna `requestId`, `summary`, `cards`, `domain` ou `suggestedDomain` conforme o caso | Alta |
+| 29 | Controllers / endpoints | Implementar endpoints de healthcheck `live` e `ready` e endpoint de `metrics` | 3, 12 | Fato confirmado: Arquitetura seções 7.2, 12.2 e 12.3 | `live` responde sem dependências, `ready` valida banco/configuração essencial e `metrics` expõe dados coletáveis | Média |
+| 30 | Tratamento de erros | Definir taxonomia de erros, mapeamento para status code e payload seguro sem stack trace externo | 18, 19, 20, 25 | Fato confirmado: RNF-17; Arquitetura seções 11.1 e 11.3 | Erros de validação, negócio, integração e timeout retornam resposta objetiva, sanitizada e consistente | Alta |
+| 31 | Segurança OWASP | Implementar middlewares transversais de `requestId`, `helmet`, CORS explícito, body limit e multipart limit | 3, 20, 30 | Fato confirmado: Arquitetura seções 3, 11.1, 11.3 e 15 | Requisições recebem `X-Request-Id`, headers de segurança e limites configuráveis aplicados antes dos controllers | Alta |
+| 32 | Segurança OWASP | Implementar rate limiting por IP no endpoint de processamento e whitelisting de campos atualizáveis no `PATCH` | 26, 27, 28, 31 | Fato confirmado: Arquitetura seções 11.2 e 11.3 | Endpoint de processamento limita consumo e rotas `PATCH` aceitam apenas campos explicitamente permitidos | Alta |
+| 33 | Segurança OWASP | Implementar proteção de upload seguro com verificação de MIME, extensão, tamanho, resolução e página máxima | 21, 22, 31 | Fato confirmado: RNF-10, RNF-16; Arquitetura seção 10.3 | Upload fora das regras é rejeitado antes do processamento e arquivos válidos respeitam os limites documentados | Alta |
+| 34 | Segurança OWASP | Implementar proteções contra prompt injection indireta por sanitização, truncamento e não confiança na resposta da IA | 20, 23, 25 | Fato confirmado: Arquitetura seções 9.7, 11.1 e 11.2 | Conteúdo enviado à IA é controlado, resposta da IA é sempre validada e nenhum texto bruto sensível é refletido em logs/erros | Alta |
+| 35 | Observabilidade e logs | Implementar logger estruturado com campos mínimos, sanitização de dados sensíveis e correlação por `requestId` | 30, 31 | Fato confirmado: RNF-03, RNF-04; Arquitetura seção 12.1 | Logs JSON incluem campos mínimos e omitem arquivo bruto, texto extraído completo, prompts sensíveis e segredos | Alta |
+| 36 | Observabilidade e logs | Implementar coleta de métricas HTTP, de processamento e de chamadas OpenAI | 23, 25, 29, 35 | Fato confirmado: Arquitetura seção 12.2 | Métricas confirmadas estão expostas em `/api/v1/metrics` e refletem volume, latência e falhas | Média |
+| 37 | Testes unitários | Implementar testes unitários de `DomainService`, `CardService` e validadores de domínios/cards | 16, 17, 18, 19 | Fato confirmado: Arquitetura seção 14; CA-01, CA-02 | Testes cobrem unicidade de domínio, vínculo obrigatório e validações mínimas de card | Alta |
+| 38 | Testes unitários | Implementar testes unitários de `ContentProcessingService` com mocks determinísticos da OpenAI e dos provedores de arquivo | 25 | Fato confirmado: Arquitetura seção 14; CA-03 a CA-10 | Testes cobrem domínio informado, classificação, sugestão, ausência de texto, timeout e regra de não persistência do resumo | Alta |
+| 39 | Testes de integração | Implementar testes de integração de repositórios e rotas principais de domínios e cards | 26, 27, 37 | Fato confirmado: Arquitetura seção 14 | Testes validam persistência real, paginação, filtros e contratos HTTP principais do CRUD | Alta |
+| 40 | Testes de integração | Implementar testes de integração do endpoint de processamento com cenários de persistência e não persistência | 28, 30, 32, 33, 38 | Fato confirmado: CA-03 a CA-10; Arquitetura seção 14 | Testes comprovam geração com domínio resolvido, sugestão sem persistência e rollback em falha externa | Alta |
+| 41 | Testes de segurança | Implementar testes negativos para upload inválido, múltiplas origens, domínio inexistente, timeout e respostas inválidas da IA | 32, 33, 34, 40 | Fato confirmado: Arquitetura seções 11 e 14; CA-05, CA-07, CA-09, CA-10 | Testes rejeitam cenários abusivos sem vazar dados sensíveis nem persistir dados parciais | Alta |
+| 42 | Documentação técnica | Documentar decisões finais de contratos, limites operacionais, lacunas resolvidas e execução local do MVP | 6, 29, 36, 41 | Fato confirmado: RF-34; RNF-01 | Documentação reflete o comportamento implementado, registra explicitamente decisões tomadas para lacunas existentes e mantém no `README.md` a lista de bibliotecas com sua função no projeto | Média |
+| 43 | Checklist final de aceite | Validar o checklist de aceite cruzando implementação, testes e rastreabilidade por user story e requisito | 39, 40, 41, 42 | Fato confirmado: US-01 a US-04; CA-01 a CA-11 | Todas as user stories obrigatórias possuem evidência de implementação e teste sem itens críticos em aberto | Alta |
+
+## 5. Ordem de execução recomendada
+
+1. Milestone 1: Base técnica
+   Definir estrutura modular, contratos técnicos, configuração de ambiente e infraestrutura local.
+2. Milestone 2: Domínio e persistência
+   Modelar entidades, criar migrations e consolidar repositórios de domínios, cards e processamento.
+3. Milestone 3: Regras de negócio
+   Implementar services centrais de domínio, card e processamento com regras transacionais e de persistência.
+4. Milestone 4: APIs
+   Expor CRUDs, processamento, healthchecks e contratos HTTP já validados.
+5. Milestone 5: Integrações
+   Consolidar provedores de arquivo e adaptador OpenAI com timeout, schema e resiliência controlada.
+6. Milestone 6: Segurança e testes
+   Aplicar controles OWASP, observabilidade mínima e testes unitários, integração e segurança.
+7. Milestone 7: validação final
+   Fechar documentação, rastreabilidade e checklist objetivo de aceite do MVP.
+
+## 6. Riscos e bloqueios
+
+| Risco | Causa | Impacto | Mitigação |
+|---|---|---|---|
+| Classificar domínio incorretamente | Critério de aderência mínima não definido | Persistência automática em domínio inadequado ou bloqueio de `US-04` | Definir limiar objetivo antes de concluir `ContentProcessingService`. |
+| Ultrapassar o SLA de 30 segundos | OCR, conversão de PDF e OpenAI em fluxo síncrono | Falha operacional em `US-03` e `US-04` | Aplicar limites de arquivo, páginas, resolução, timeout hard e retry restrito. |
+| Persistir dados parciais inconsistentes | Falha entre geração IA e banco | Violação de `RNF-06` e `CA-09` | Persistir apenas após validação final e usar transação no fluxo de cards gerados. |
+| Aceitar upload malicioso ou inválido | MIME divergente, arquivo excessivo ou conteúdo não suportado | Risco de segurança e exaustão de recursos | Validar MIME/extensão, limites, resolução, páginas e rejeitar múltiplos arquivos. |
+| Vazar conteúdo sensível em logs ou erros | Logging indevido de texto extraído, prompt ou segredos | Exposição de dados e não conformidade de segurança | Sanitizar logs, padronizar erros e nunca registrar conteúdo bruto ou chave da OpenAI. |
+| Fragilizar o ambiente local por dependências nativas | Possível uso de `sharp` | Quebra do setup local e de testes de integração | Evitar dependências nativas desnecessárias e validar readiness do ambiente. |
+| Divergir contratos entre arquitetura e implementação | Lacuna em formato de erro ou conteúdo utilizável | Retrabalho em controllers, testes e documentação | Registrar decisões faltantes na documentação técnica antes do aceite final. |
+
+## 7. Critérios de pronto
+
+- Todas as user stories obrigatórias `US-01` a `US-04` estão implementadas com evidência de teste.
+- Os endpoints confirmados respondem com contratos consistentes e status compatíveis com os critérios de aceitação.
+- O fluxo de processamento aceita apenas uma origem por requisição, respeita limites operacionais e falha com segurança acima de `30s`.
+- O sistema não persiste resumo, texto extraído bruto, arquivo original nem cards sem domínio resolvido.
+- Cards gerados são persistidos apenas quando há domínio informado válido ou domínio resolvido pelo fluxo de classificação.
+- O registro técnico em `processing_requests` é criado e finalizado com `requestId`, status e metadados sanitizados.
+- Logs estruturados, métricas, `health/live`, `health/ready` e `metrics` estão funcionando sem expor informação sensível.
+- Os controles mínimos de segurança OWASP para upload, validação de entrada, rate limiting, tratamento de erros e logging seguro estão ativos.
+- O ambiente local sobe com `docker compose` e possui `package.json`, `tsconfig.json`, configuração de testes, `.env.example`, `.gitignore`, `README.md` e `LICENSE` aderentes ao MVP, incluindo a lista de bibliotecas e a função de cada uma no projeto.
+- As lacunas inevitáveis estão registradas como “informação insuficiente” ou resolvidas por decisão explícita documentada.
