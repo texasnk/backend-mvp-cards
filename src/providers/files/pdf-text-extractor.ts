@@ -1,37 +1,29 @@
-import { execFile } from "node:child_process";
-import { promisify } from "node:util";
+import { readFile } from "node:fs/promises";
+import pdfParse from "pdf-parse-new";
 import type {
   PdfTextExtractor,
   ProcessingFileReference,
 } from "../../modules/processing/processing.service";
 import { ExternalServiceError, TimeoutError } from "../../shared/errors/app-error";
 
-const execFileAsync = promisify(execFile);
-
 export interface LocalPdfTextExtractorOptions {
   timeoutMs: number;
-  binaryPath?: string;
 }
 
 export class LocalPdfTextExtractor implements PdfTextExtractor {
-  private readonly binaryPath: string;
-
-  constructor(private readonly options: LocalPdfTextExtractorOptions) {
-    this.binaryPath = options.binaryPath ?? "pdftotext";
-  }
+  constructor(private readonly options: LocalPdfTextExtractorOptions) { }
 
   async extractText(file: ProcessingFileReference): Promise<string> {
     try {
-      const { stdout } = await execFileAsync(
-        this.binaryPath,
-        ["-layout", "-nopgbrk", file.path, "-"],
-        {
-          timeout: this.options.timeoutMs,
-          maxBuffer: 10 * 1024 * 1024,
-        },
+      const extractionResult = await withTimeout(
+        (async () => {
+          const fileBuffer = await readFile(file.path);
+          return pdfParse(fileBuffer, { verbosityLevel: 0 });
+        })(),
+        this.options.timeoutMs,
       );
 
-      return stdout;
+      return extractionResult.text;
     } catch (error: unknown) {
       if (isTimeoutError(error)) {
         throw new TimeoutError("PDF text extraction timed out.", "PDF_TEXT_EXTRACTION_TIMEOUT");
@@ -46,6 +38,30 @@ export class LocalPdfTextExtractor implements PdfTextExtractor {
 }
 
 function isTimeoutError(error: unknown): boolean {
-  return typeof error === "object" && error !== null && "killed" in error;
+  return error instanceof PdfTextExtractionTimeoutError;
 }
 
+class PdfTextExtractionTimeoutError extends Error {
+  constructor() {
+    super("PDF text extraction timed out.");
+  }
+}
+
+async function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
+  let timeoutHandle: NodeJS.Timeout | undefined;
+
+  try {
+    return await Promise.race([
+      promise,
+      new Promise<T>((_, reject) => {
+        timeoutHandle = setTimeout(() => {
+          reject(new PdfTextExtractionTimeoutError());
+        }, timeoutMs);
+      }),
+    ]);
+  } finally {
+    if (timeoutHandle) {
+      clearTimeout(timeoutHandle);
+    }
+  }
+}

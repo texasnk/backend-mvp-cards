@@ -1,25 +1,17 @@
-import { execFile } from "node:child_process";
 import { readFile } from "node:fs/promises";
-import { promisify } from "node:util";
 import imageSize from "image-size";
-import { ValidationError } from "../../shared/errors/app-error";
+import pdfParse from "pdf-parse-new";
+import { ExternalServiceError, TimeoutError, ValidationError } from "../../shared/errors/app-error";
 import type { ProcessingFileReference } from "../../modules/processing/processing.service";
-
-const execFileAsync = promisify(execFile);
 
 export interface FileInspectorOptions {
   maxPdfPages: number;
   maxImageWidth: number;
   maxImageHeight: number;
-  pdfInfoBinaryPath?: string;
 }
 
 export class FileInspector {
-  private readonly pdfInfoBinaryPath: string;
-
-  constructor(private readonly options: FileInspectorOptions) {
-    this.pdfInfoBinaryPath = options.pdfInfoBinaryPath ?? "pdfinfo";
-  }
+  constructor(private readonly options: FileInspectorOptions) {}
 
   async inspect(file: ProcessingFileReference): Promise<void> {
     if (file.mimeType === "application/pdf") {
@@ -33,21 +25,46 @@ export class FileInspector {
   }
 
   private async inspectPdf(file: ProcessingFileReference): Promise<void> {
-    const { stdout } = await execFileAsync(this.pdfInfoBinaryPath, [file.path], {
-      timeout: 10000,
-      maxBuffer: 1024 * 1024,
-    });
-    const pagesMatch = stdout.match(/^Pages:\s+(\d+)/m);
-    const pages = pagesMatch ? Number(pagesMatch[1]) : 0;
+    try {
+      const fileBuffer = await readFile(file.path);
+      const result = await withTimeout(
+        pdfParse(fileBuffer, {
+          max: 1,
+          verbosityLevel: 0,
+        }),
+        10000,
+      );
+      const pages = result.numpages;
 
-    if (!Number.isInteger(pages) || pages < 1) {
-      throw new ValidationError("Could not determine PDF page count.", "INVALID_PDF_METADATA");
-    }
+      if (!Number.isInteger(pages) || pages < 1) {
+        throw new ValidationError("Could not determine PDF page count.", "INVALID_PDF_METADATA");
+      }
 
-    if (pages > this.options.maxPdfPages) {
-      throw new ValidationError(
-        `PDF exceeds the maximum page limit of ${this.options.maxPdfPages}.`,
-        "PDF_PAGE_LIMIT_EXCEEDED",
+      if (pages > this.options.maxPdfPages) {
+        throw new ValidationError(
+          `PDF exceeds the maximum page limit of ${this.options.maxPdfPages}.`,
+          "PDF_PAGE_LIMIT_EXCEEDED",
+        );
+      }
+    } catch (error) {
+      console.error("FileInspector PDF inspection failed", {
+        filePath: file.path,
+        mimeType: file.mimeType,
+        originalName: file.originalName,
+        error,
+      });
+
+      if (error instanceof ValidationError) {
+        throw error;
+      }
+
+      if (isTimeoutError(error)) {
+        throw new TimeoutError("PDF metadata inspection timed out.", "PDF_INFO_TIMEOUT");
+      }
+
+      throw new ExternalServiceError(
+        "PDF metadata inspection failed.",
+        "PDF_INFO_FAILED",
       );
     }
   }
@@ -72,3 +89,31 @@ export class FileInspector {
   }
 }
 
+function isTimeoutError(error: unknown): boolean {
+  return error instanceof PdfInspectionTimeoutError;
+}
+
+class PdfInspectionTimeoutError extends Error {
+  constructor() {
+    super("PDF metadata inspection timed out.");
+  }
+}
+
+async function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
+  let timeoutHandle: NodeJS.Timeout | undefined;
+
+  try {
+    return await Promise.race([
+      promise,
+      new Promise<T>((_, reject) => {
+        timeoutHandle = setTimeout(() => {
+          reject(new PdfInspectionTimeoutError());
+        }, timeoutMs);
+      }),
+    ]);
+  } finally {
+    if (timeoutHandle) {
+      clearTimeout(timeoutHandle);
+    }
+  }
+}
