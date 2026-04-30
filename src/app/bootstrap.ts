@@ -14,7 +14,6 @@ import { OpenAiVisionOcrProvider } from "../providers/ai/openai.vision-ocr";
 import { FileInspector } from "../providers/files/file-inspector";
 import { MimeValidator } from "../providers/files/mime-validator";
 import { LocalPdfTextExtractor } from "../providers/files/pdf-text-extractor";
-import { PopplerPdfToImageConverter } from "../providers/files/pdf-to-image";
 import { TempFileManager } from "../providers/files/temp-file-manager";
 import { DefaultTextSanitizer } from "../providers/files/text-sanitizer";
 import { loadEnvironmentConfig } from "../shared/config/env";
@@ -79,9 +78,6 @@ export function bootstrapApplication(): BootstrapResult {
     cardService,
     new DefaultTextSanitizer(),
     new LocalPdfTextExtractor({ timeoutMs: config.requestTimeoutMs }),
-    new PopplerPdfToImageConverter(tempFileManager, {
-      timeoutMs: config.requestTimeoutMs,
-    }),
     new OpenAiVisionOcrProvider(openAiVisionClient),
     new OpenAiGeneratorProvider(openAiTextClient, promptBuilder),
     new UuidGenerator(),
@@ -122,4 +118,3 @@ export function bootstrapApplication(): BootstrapResult {
     },
   };
 }
-

@@ -75,9 +75,6 @@ describe("ContentProcessingService", () => {
       extractText: async () => "",
     },
     {
-      convertFirstPage: async (file) => file,
-    },
-    {
       extractTextFromImage: async () => "",
     },
     {

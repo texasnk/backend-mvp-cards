@@ -83,10 +83,6 @@ export interface PdfTextExtractor {
   extractText(file: ProcessingFileReference): Promise<string>;
 }
 
-export interface PdfToImageConverter {
-  convertFirstPage(file: ProcessingFileReference): Promise<ProcessingFileReference>;
-}
-
 export interface VisionOcrProvider {
   extractTextFromImage(file: ProcessingFileReference): Promise<string>;
 }
@@ -129,7 +125,6 @@ export class ContentProcessingService {
     private readonly cardService: CardService,
     private readonly textSanitizer: TextSanitizer,
     private readonly pdfTextExtractor: PdfTextExtractor,
-    private readonly pdfToImageConverter: PdfToImageConverter,
     private readonly visionOcrProvider: VisionOcrProvider,
     private readonly openAiProvider: OpenAiProcessingProvider,
     private readonly idGenerator: IdGenerator,
@@ -260,13 +255,6 @@ export class ContentProcessingService {
       extractedText = this.textSanitizer.sanitizeText(
         await this.pdfTextExtractor.extractText(input.file),
       );
-
-      if (extractedText.length < this.options.minUsableTextLength) {
-        const imageFile = await this.pdfToImageConverter.convertFirstPage(input.file);
-        extractedText = this.textSanitizer.sanitizeText(
-          await this.visionOcrProvider.extractTextFromImage(imageFile),
-        );
-      }
     }
 
     if (extractedText.length > this.options.maxTextLength) {
