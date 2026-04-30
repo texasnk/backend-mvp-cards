@@ -1,11 +1,9 @@
-import { strict as assert } from "node:assert";
 import { DomainRepository } from "../src/modules/domains/domain.repository";
 import { DomainService } from "../src/modules/domains/domain.service";
 import type { DatabaseClient, QueryResult } from "../src/shared/db/database.types";
 
-void testDomainServiceDuplicateProtection();
-
-async function testDomainServiceDuplicateProtection(): Promise<void> {
+describe("DomainService", () => {
+  it("rejects duplicate normalized names", async () => {
   const existingRow = {
     id: "domain-1",
     name: "Cardiologia",
@@ -25,13 +23,11 @@ async function testDomainServiceDuplicateProtection(): Promise<void> {
 
   const service = new DomainService(new DomainRepository(db));
 
-  await assert.rejects(
-    () =>
+    await expect(
       service.create({
         id: "domain-2",
         name: "Cardiologia",
       }),
-    /already exists/i,
-  );
-}
-
+    ).rejects.toThrow(/already exists/i);
+  });
+});

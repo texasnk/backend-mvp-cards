@@ -1,4 +1,3 @@
-import { strict as assert } from "node:assert";
 import { CardRepository } from "../src/modules/cards/card.repository";
 import { CardService } from "../src/modules/cards/card.service";
 import { DomainRepository } from "../src/modules/domains/domain.repository";
@@ -7,9 +6,8 @@ import { ContentProcessingService } from "../src/modules/processing/processing.s
 import { ProcessingRequestRepository } from "../src/modules/processing/processing.repository";
 import type { DatabaseClient, QueryResult } from "../src/shared/db/database.types";
 
-void testProcessingServiceRejectsUnusableContent();
-
-async function testProcessingServiceRejectsUnusableContent(): Promise<void> {
+describe("ContentProcessingService", () => {
+  it("rejects content without usable extracted text", async () => {
   const db: DatabaseClient = {
     async query(sql: string): Promise<QueryResult<any>> {
       if (sql.includes("insert into processing_requests")) {
@@ -100,14 +98,12 @@ async function testProcessingServiceRejectsUnusableContent(): Promise<void> {
     },
   );
 
-  await assert.rejects(
-    () =>
+    await expect(
       service.process({
         requestId: "request-1",
         inputType: "text",
         text: "oi",
       }),
-    /usable textual content/i,
-  );
-}
-
+    ).rejects.toThrow(/usable textual content/i);
+  });
+});
