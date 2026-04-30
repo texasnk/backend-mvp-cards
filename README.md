@@ -2,7 +2,14 @@
 
 ## Descrição
 
-API backend em TypeScript para cadastro de domínios de estudo, CRUD de cards manuais e geração síncrona de cards a partir de texto, imagem ou PDF.
+API backend em TypeScript para um MVP de geração e organização de material de estudo.
+
+No escopo do MVP, o backend atende quatro objetivos centrais:
+
+- permitir que um gestor de conteúdo mantenha domínios de estudo para organizar o acervo por assunto
+- permitir a manutenção de cards manuais com frente, verso e vínculo obrigatório a um domínio
+- permitir que um integrador envie texto, imagem ou PDF para obter resumo e cards gerados automaticamente
+- permitir que o sistema use um domínio informado ou tente classificar o conteúdo em um domínio existente, com sugestão de novo domínio quando não houver aderência suficiente
 
 O projeto foi estruturado como um monólito modular com foco em:
 
@@ -34,6 +41,20 @@ O projeto foi estruturado como um monólito modular com foco em:
 - classificação automática de domínio e sugestão de novo domínio
 - geração de resumo e cards via OpenAI
 - `health/live`, `health/ready` e `metrics`
+
+## O que o MVP entrega
+
+- organização de conhecimento por domínios de estudo reutilizáveis
+- criação e manutenção de cards manuais para formar uma base inicial de estudo
+- transformação de conteúdo bruto em resumo e cards em PT-BR a partir de texto, imagem ou PDF pesquisável
+- persistência automática apenas quando houver domínio válido informado ou domínio resolvido com aderência suficiente
+- retorno de `summary`, `cards` e sugestão de domínio mesmo quando não houver persistência dos cards gerados
+
+## Público e uso esperado
+
+- times ou pessoas que organizam conteúdo educacional por tema
+- integradores que precisam de um backend síncrono para alimentar fluxos próprios de estudo
+- cenários em que o frontend, o algoritmo de revisão espaçada e o planejamento pedagógico ainda ficarão para uma próxima etapa
 
 ## Estrutura de documentação
 
@@ -226,6 +247,14 @@ Observações importantes:
 - ainda faltam testes de integração HTTP
 - ainda faltam testes negativos de segurança
 - a persistência dos cards gerados ainda não está encapsulada em transação explícita
+
+## Próximos passos
+
+- criar uma metodologia de estudo sobre os cards gerados e manuais, definindo como revisar, consolidar e evoluir o conteúdo
+- definir um cronograma de estudo com cadência por domínio, quantidade de cards por sessão e critérios mínimos de progresso
+- introduzir algoritmo de revisão espaçada e agendamento de revisões, hoje fora do escopo do MVP
+- ampliar testes de integração HTTP, cenários negativos de segurança e cobertura do pipeline de processamento
+- encapsular a persistência dos cards gerados em transação explícita para reduzir risco de inconsistência parcial
 
 ## Qualidade já validada
 
