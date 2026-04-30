@@ -1,5 +1,10 @@
 # Backend MVP Cards
 
+ [![CI](https://github.com/texasnk/backend-mvp-cards/actions/workflows/ci.yml/badge.svg)](https://github.com/texasnk/backend-mvp-cards/actions/workflows/ci.yml)
+  ![Node.js](https://img.shields.io/badge/node-22.x-339933?logo=node.js&logoColor=white)
+  ![TypeScript](https://img.shields.io/badge/typescript-5.x-3178C6?logo=typescript&logoColor=white)
+  [![License](https://img.shields.io/badge/license-MIT-green)](./LICENSE)
+  
 ## Descrição
 
 API backend em TypeScript para um MVP de geração e organização de material de estudo.
