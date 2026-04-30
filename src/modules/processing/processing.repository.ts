@@ -29,8 +29,7 @@ export class ProcessingRequestRepository {
   constructor(private readonly db: DatabaseClient) {}
 
   async createStarted(input: CreateProcessingRequestInput): Promise<ProcessingRequest> {
-    const result = await this.db.query<ProcessingRequestRow>(
-      `
+    const query = `
         insert into processing_requests (
           id,
           input_type,
@@ -57,9 +56,9 @@ export class ProcessingRequestRepository {
           failure_reason,
           started_at,
           finished_at
-      `,
-      [input.id, input.inputType, input.providedDomainId ?? null, input.cardsRequested],
-    );
+      `;
+    const params = [input.id, input.inputType, input.providedDomainId ?? null, input.cardsRequested];
+    const result = await this.executeQuery<ProcessingRequestRow>(query, params);
 
     return mapProcessingRequestRow(result.rows[0]);
   }
@@ -75,8 +74,7 @@ export class ProcessingRequestRepository {
   }
 
   async markFailed(input: FailProcessingRequestInput): Promise<ProcessingRequest | null> {
-    const result = await this.db.query<ProcessingRequestRow>(
-      `
+    const query = `
         update processing_requests
         set
           status = 'failed',
@@ -100,16 +98,15 @@ export class ProcessingRequestRepository {
           failure_reason,
           started_at,
           finished_at
-      `,
-      [input.id, input.extractedTextChars, input.failureCode, input.failureReason],
-    );
+      `;
+    const params = [input.id, input.extractedTextChars, input.failureCode, input.failureReason];
+    const result = await this.executeQuery<ProcessingRequestRow>(query, params);
 
     return result.rowCount === 0 ? null : mapProcessingRequestRow(result.rows[0]);
   }
 
   async findById(id: string): Promise<ProcessingRequest | null> {
-    const result = await this.db.query<ProcessingRequestRow>(
-      `
+    const query = `
         select
           id,
           input_type,
@@ -127,9 +124,8 @@ export class ProcessingRequestRepository {
           finished_at
         from processing_requests
         where id = $1
-      `,
-      [id],
-    );
+      `;
+    const result = await this.executeQuery<ProcessingRequestRow>(query, [id]);
 
     return result.rowCount === 0 ? null : mapProcessingRequestRow(result.rows[0]);
   }
@@ -138,8 +134,7 @@ export class ProcessingRequestRepository {
     status: "succeeded" | "succeeded_without_persistence",
     input: CompleteProcessingRequestInput,
   ): Promise<ProcessingRequest | null> {
-    const result = await this.db.query<ProcessingRequestRow>(
-      `
+    const query = `
         update processing_requests
         set
           resolved_domain_id = $2,
@@ -165,19 +160,35 @@ export class ProcessingRequestRepository {
           failure_reason,
           started_at,
           finished_at
-      `,
-      [
-        input.id,
-        input.resolvedDomainId ?? null,
-        status,
-        input.cardsCreated,
-        input.cardsPersisted,
-        input.suggestedDomainName ?? null,
-        input.extractedTextChars,
-      ],
-    );
+      `;
+    const params = [
+      input.id,
+      input.resolvedDomainId ?? null,
+      status,
+      input.cardsCreated,
+      input.cardsPersisted,
+      input.suggestedDomainName ?? null,
+      input.extractedTextChars,
+    ];
+    const result = await this.executeQuery<ProcessingRequestRow>(query, params);
 
     return result.rowCount === 0 ? null : mapProcessingRequestRow(result.rows[0]);
+  }
+
+  private async executeQuery<T extends QueryResultRow>(
+    query: string,
+    params: readonly unknown[],
+  ) {
+    try {
+      return await this.db.query<T>(query, params);
+    } catch (error) {
+      console.error("ProcessingRequestRepository query failed", {
+        query,
+        params,
+        error,
+      });
+      throw error;
+    }
   }
 }
 
@@ -199,4 +210,3 @@ function mapProcessingRequestRow(row: ProcessingRequestRow): ProcessingRequest {
     finishedAt: row.finished_at ? new Date(row.finished_at) : null,
   };
 }
-

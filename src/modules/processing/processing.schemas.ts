@@ -11,10 +11,10 @@ export interface CreateProcessingBody {
 
 export function parseCreateProcessingBody(body: unknown): CreateProcessingBody {
   const value = asObject(body);
-  const requestId = asOptionalString(value.requestId);
+  const requestId = asOptionalUuid(value.requestId, "requestId");
   const inputType = asOptionalInputType(value.inputType);
   const text = asOptionalString(value.text);
-  const domainId = asOptionalString(value.domainId);
+  const domainId = asOptionalUuid(value.domainId, "domainId");
   const cardsCount = asOptionalInteger(value.cardsCount, "cardsCount");
 
   return {
@@ -47,6 +47,20 @@ function asOptionalString(value: unknown): string | undefined {
   return trimmed.length > 0 ? trimmed : undefined;
 }
 
+function asOptionalUuid(value: unknown, field: string): string | undefined {
+  const parsed = asOptionalString(value);
+
+  if (parsed === undefined) {
+    return undefined;
+  }
+
+  if (!UUID_PATTERN.test(parsed)) {
+    throw new ValidationError(`Field "${field}" must be a valid UUID.`, "INVALID_FIELD");
+  }
+
+  return parsed;
+}
+
 function asOptionalInputType(value: unknown): ProcessingInputType | undefined {
   if (value === undefined) {
     return undefined;
@@ -73,3 +87,5 @@ function asOptionalInteger(value: unknown, field: string): number | undefined {
   return parsed;
 }
 
+const UUID_PATTERN =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
