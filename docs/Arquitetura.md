@@ -58,7 +58,6 @@ Express API
   |
   +--> Providers
   |      - PdfTextExtractor
-  |      - PdfToImageConverter
   |      - VisionOcrProvider
   |      - OpenAiGeneratorProvider
   |
@@ -82,8 +81,7 @@ Express API
 | Repositórios | Isolar acesso ao banco | SQL com query builder ou ORM leve | ORM mais completo se o modelo crescer |
 | Banco | Persistir domínios, cards e trilha mínima de processamento | `PostgreSQL` | Separar leitura/escrita somente com escala real |
 | Extração de PDF textual | Extrair texto nativamente de PDFs pesquisáveis | Biblioteca Node dedicada | Serviço externo especializado |
-| Conversão PDF imagem | Transformar PDF escaneado em imagem | `poppler-utils` no container da API | Worker assíncrono dedicado |
-| OCR/visão | Ler imagem enviada e PDF escaneado convertido | OpenAI com entrada de imagem | OCR local especializado |
+| OCR/visão | Ler imagem enviada | OpenAI com entrada de imagem | OCR local especializado |
 | Geração IA | Resumo, cards, classificação e sugestão de domínio | OpenAI via adaptador próprio | Multi-provider com fallback |
 | Observabilidade | Logs, métricas e healthchecks | logger estruturado + métricas Prometheus | tracing distribuído completo |
 
@@ -129,7 +127,6 @@ src/
       openai.vision-ocr.ts
     files/
       pdf-text-extractor.ts
-      pdf-to-image.ts
       mime-validator.ts
       temp-file-manager.ts
   shared/
@@ -186,7 +183,7 @@ Decisão recomendada:
    - `text`: sanitização e truncamento defensivo.
    - `pdf`: tentativa de extração textual local.
    - `image`: OCR por visão na OpenAI.
-   - `pdf` escaneado sem texto: conversão para imagem e OCR por visão na OpenAI.
+   - `pdf` sem texto utilizável: falha controlada sem fallback OCR no backend atual.
 5. Se não houver texto utilizável, a operação falha sem persistir cards.
 6. Se `domainId` vier preenchido, o sistema usa o domínio informado.
 7. Se `domainId` não vier:
@@ -436,7 +433,6 @@ Critério arquitetural:
 ### 9.1 Responsabilidades da integração
 
 - OCR por visão para imagem enviada.
-- OCR por visão para PDF escaneado convertido em imagem.
 - Classificação de domínio quando `domainId` não vier informado.
 - Sugestão de domínio quando não houver aderência.
 - Geração de resumo.
@@ -524,7 +520,7 @@ Motivos:
 |---|---|---|---|
 | Texto puro | validação de tamanho | sanitização | texto |
 | PDF textual | extração local | validação de conteúdo | texto |
-| PDF escaneado | conversão para imagem | OCR via OpenAI | texto |
+| PDF sem texto utilizável | rejeição controlada | resposta de erro | sem texto |
 | Imagem | normalização de resolução | OCR via OpenAI | texto |
 
 ### 10.3 Regras operacionais
@@ -544,7 +540,6 @@ Motivos:
 | Upload multipart | `multer` |
 | Detecção MIME | `file-type` ou validação equivalente |
 | Extração de PDF textual | biblioteca Node dedicada para texto |
-| PDF para imagem | `poppler-utils` no container |
 | Compressão/redimensionamento | `sharp` |
 
 ### Alternativa futura
@@ -696,7 +691,6 @@ Serviços no `docker compose`:
 
 Dependências de sistema no container da API:
 
-- `poppler-utils` para converter PDF escaneado em imagem
 - bibliotecas nativas exigidas por `sharp`, se utilizado
 
 ### Variáveis de ambiente mínimas
@@ -728,7 +722,7 @@ Dependências de sistema no container da API:
 | Risco | Impacto | Mitigação MVP |
 |---|---|---|
 | OCR ruim em imagem de baixa qualidade | cards incorretos | limite de resolução, normalização e mensagem clara de falha |
-| PDF escaneado pesado | timeout acima do SLA | limitar tamanho, páginas e converter com resolução controlada |
+| PDF sem texto utilizável | rejeição do conteúdo | comunicar limitação e exigir PDF com camada de texto ou imagem separada |
 | Resposta inconsistente da IA | persistência inválida | structured outputs + validação Joi/schema |
 | Custo variável da OpenAI | impacto operacional | limite de tamanho, limite de cards, logs de consumo |
 | Ambiguidade na classificação de domínio | cards no domínio errado | pedir classificação apenas entre domínios existentes e aplicar critério mínimo de aderência |
@@ -772,7 +766,7 @@ Para o MVP, a melhor relação entre simplicidade, segurança e capacidade de ev
 - `PostgreSQL` como banco único;
 - processamento síncrono;
 - extração local para PDF textual;
-- OCR multimodal via OpenAI para imagens e PDFs escaneados;
+- OCR multimodal via OpenAI para imagens;
 - geração estruturada via OpenAI com validação por schema;
 - persistência apenas de domínios, cards e trilha técnica mínima;
 - observabilidade básica com logs estruturados, métricas e healthchecks;

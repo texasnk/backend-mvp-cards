@@ -67,7 +67,7 @@ Este documento complementa:
 | Decisão | Motivo | Impacto atual |
 |---|---|---|
 | `ContentProcessingService` recebe `domainMatchThreshold` por configuração | Evitar fixar limiar de aderência sem decisão final de produto | O fluxo está preparado e o valor pode ser ajustado por ambiente. |
-| Adaptadores de PDF usam `pdftotext`, `pdftoppm` e `pdfinfo` | Aderência ao documento arquitetural e menor acoplamento inicial | O `Dockerfile` já inclui `poppler-utils`; em host local isso ainda depende da máquina. |
+| Adaptadores de PDF usam `pdf-parse-new` para extração e inspeção | Remove dependências nativas de inspeção e simplifica o ambiente local | PDFs sem camada de texto deixam de ter fallback OCR neste backend. |
 | Métricas usam registro local em memória | Fechar observabilidade mínima sem ampliar dependências agora | Pode ser substituído por `prom-client` depois. |
 | O endpoint de processamento aceita apenas uma origem por requisição | Garantir consistência entre `text` e `file` | A validação já está conectada no controller HTTP. |
 
@@ -86,10 +86,10 @@ Este documento complementa:
 |---|---|---|---|
 | `RF-01` a `RF-05` | Parcial | `domain.repository.ts`, `domain.service.ts`, `domain.controller.ts`, `npm test` | Código e testes unitários existem; falta validação HTTP real. |
 | `RF-06` a `RF-10` | Parcial | `card.repository.ts`, `card.service.ts`, `card.controller.ts`, `npm test` | Código e testes unitários existem; falta validação HTTP real. |
-| `RF-11` a `RF-13` | Parcial | `pdf-text-extractor.ts`, `pdf-to-image.ts`, `openai.vision-ocr.ts`, `processing.controller.ts` | Upload e OCR estão ligados; falta validação fim a fim. |
+| `RF-11` a `RF-13` | Parcial | `pdf-text-extractor.ts`, `file-inspector.ts`, `openai.vision-ocr.ts`, `processing.controller.ts` | Upload, extração textual e OCR de imagem estão ligados; falta validação fim a fim. |
 | `RF-14` | Implementado em código | `processing.schemas.ts`, `processing.controller.ts` | A origem única já é validada no endpoint. |
 | `RF-15` a `RF-29` | Parcial | `processing.service.ts`, `openai.generator.ts`, `processing.repository.ts`, `src/app/bootstrap.ts` | Fluxo implementado; falta transação explícita e validação operacional. |
-| `RF-30` e `RF-31` | Parcial | `processing.service.ts`, `openai.client.ts`, `pdf-text-extractor.ts`, `pdf-to-image.ts` | Timeouts já existem; falta validação em execução real. |
+| `RF-30` e `RF-31` | Parcial | `processing.service.ts`, `openai.client.ts`, `pdf-text-extractor.ts`, `file-inspector.ts` | Timeouts já existem; falta validação em execução real. |
 | `RF-32` a `RF-39` | Implementado em código | `package.json`, `tsconfig.json`, `jest.config.ts`, `docker-compose.yml`, `Dockerfile`, `README.md`, `LICENSE` | Falta validar migrations e compose em execução real. |
 
 ## Matriz de rastreabilidade por requisito não funcional
@@ -102,7 +102,7 @@ Este documento complementa:
 | `RNF-05` | Pendente | sem TLS/app gateway no repositório | Depende da infraestrutura final. |
 | `RNF-06` | Parcial | `processing.service.ts`, `processing.repository.ts` | Transação explícita ainda pendente. |
 | `RNF-07` | Implementado em código | `processing.service.ts` | Fluxo síncrono modelado e conectado. |
-| `RNF-08` e `RNF-09` | Parcial | `openai.client.ts`, `pdf-text-extractor.ts`, `pdf-to-image.ts` | Timeouts implementados nos adaptadores. |
+| `RNF-08` e `RNF-09` | Parcial | `openai.client.ts`, `pdf-text-extractor.ts`, `file-inspector.ts` | Timeouts implementados nos adaptadores. |
 | `RNF-10` a `RNF-12` | Parcial | `env.ts`, `upload.middleware.ts`, `file-inspector.ts` | Limites e validações existem; falta validação operacional. |
 | `RNF-13` | Parcial | prompts e geração em PT-BR | Ainda sem validação real com OpenAI. |
 | `RNF-14` | Implementado em código | código em inglês, docs em PT-BR | Aderência mantida. |

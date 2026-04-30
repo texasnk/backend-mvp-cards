@@ -20,7 +20,7 @@ O projeto foi estruturado como um monólito modular com foco em:
 - Jest
 - Docker Compose
 - OpenAI API
-- `poppler-utils` para `pdftotext`, `pdftoppm` e `pdfinfo`
+- `pdf-parse-new` para extração textual de PDF
 
 ## Escopo atual
 
@@ -29,7 +29,7 @@ O projeto foi estruturado como um monólito modular com foco em:
 - `POST /api/v1/processings` com suporte a:
   - `application/json` com `text`
   - `multipart/form-data` com `file`
-- OCR por visão para imagem e PDF escaneado
+- OCR por visão para imagem
 - extração textual local para PDF pesquisável
 - classificação automática de domínio e sugestão de novo domínio
 - geração de resumo e cards via OpenAI
@@ -60,7 +60,6 @@ O projeto foi estruturado como um monólito modular com foco em:
 
 - Node.js 22+
 - PostgreSQL local ou Docker
-- binários do Poppler instalados localmente se você não usar Docker
 
 ### Variáveis de ambiente
 
@@ -126,7 +125,7 @@ npm run dev
 docker compose up --build
 ```
 
-O compose sobe `postgres` e `api`. A API usa o `DATABASE_URL` interno do compose e a imagem já inclui `poppler-utils`.
+O compose sobe `postgres` e `api`. A API usa o `DATABASE_URL` interno do compose.
 
 ## Uso
 
@@ -166,6 +165,8 @@ Os contratos completos de request e response estão em [docs/API-Reference.md](d
 Cobertura do guia:
 
 - payloads esperados por endpoint
+- descrição do que representa cada campo principal
+- enums disponíveis por contrato
 - responses de sucesso
 - responses de erro
 - paginação
@@ -199,7 +200,6 @@ curl -X POST http://localhost:3000/api/v1/processings \
 A IA é usada em quatro responsabilidades principais:
 
 - OCR de imagem
-- OCR de PDF escaneado após conversão da primeira página para imagem
 - classificação de conteúdo em um domínio existente
 - geração de resumo, cards e sugestão de domínio
 
@@ -217,6 +217,7 @@ Observações importantes:
 - o texto bruto extraído não é persistido
 - o arquivo original não é persistido
 - respostas da IA são tratadas como não confiáveis e passam por validação estrutural mínima
+- PDFs sem camada de texto utilizável são rejeitados no fluxo atual
 
 ## Limitações atuais
 

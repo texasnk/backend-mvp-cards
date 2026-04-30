@@ -44,6 +44,33 @@ Status codes mais comuns no estado atual:
 
 ## Modelos principais
 
+### Enums relevantes
+
+#### `ProcessingInputType`
+
+- `text`
+- `image`
+- `pdf`
+
+#### `CardSourceType`
+
+- `manual`
+- `generated`
+
+#### `CardApproach`
+
+- `definicao`
+- `comparacao`
+- `causa_efeito`
+- `aplicacao_pratica`
+- `armadilha_conceitual`
+- `verdadeiro_falso`
+
+#### `ResolvedProcessingDomain.mode`
+
+- `provided`
+- `classified`
+
 ### StudyDomain
 
 ```json
@@ -100,6 +127,7 @@ Request body:
 
 Regras principais:
 
+- `name`: nome público do domínio
 - `name` deve ser string não vazia
 - a regra de domínio exige entre 3 e 40 caracteres
 - nomes normalizados duplicados são rejeitados
@@ -122,9 +150,9 @@ Lista domínios com paginação.
 
 Query params:
 
-- `search` opcional
-- `page` opcional, padrão `1`
-- `pageSize` opcional, padrão `20`
+- `search` opcional: filtra por nome
+- `page` opcional, padrão `1`: página atual
+- `pageSize` opcional, padrão `20`: tamanho da página
 
 Exemplo:
 
@@ -196,6 +224,10 @@ Request body:
 
 Regras principais:
 
+- `studyDomainId`: UUID do domínio ao qual o card pertence
+- `front`: frente do card
+- `back`: verso do card
+- `approach`: abordagem pedagógica opcional
 - `studyDomainId` é obrigatório
 - `front` e `back` devem ser strings não vazias e ter pelo menos 3 caracteres
 - `approach` é opcional
@@ -228,11 +260,11 @@ Lista cards com paginação.
 
 Query params:
 
-- `studyDomainId` opcional
+- `studyDomainId` opcional: filtra por domínio
 - `sourceType` opcional: `manual` ou `generated`
-- `approach` opcional
-- `page` opcional, padrão `1`
-- `pageSize` opcional, padrão `20`
+- `approach` opcional: filtra pela abordagem do card
+- `page` opcional, padrão `1`: página atual
+- `pageSize` opcional, padrão `20`: tamanho da página
 
 Exemplo:
 
@@ -314,7 +346,7 @@ Request body:
 
 ```json
 {
-  "requestId": "optional-request-id",
+  "requestId": "9ff3f8e1-0b40-4bd0-80e8-0f5171963d4e",
   "inputType": "text",
   "text": "Conteudo em texto puro para resumo e geracao de cards.",
   "domainId": "2c93f8e8-1d80-4af1-8bf8-bcab6ff61c74",
@@ -324,11 +356,18 @@ Request body:
 
 Campos:
 
-- `requestId` opcional
-- `inputType` opcional; se informado com texto, deve ser `text`
-- `text` obrigatório nesta modalidade
-- `domainId` opcional
-- `cardsCount` opcional, inteiro
+- `requestId` opcional: UUID externo para rastreabilidade
+- `inputType` opcional: deve ser `text` quando o conteúdo vier em `text`
+- `text` obrigatório nesta modalidade: conteúdo bruto a ser processado
+- `domainId` opcional: UUID do domínio a ser usado sem reclassificação
+- `cardsCount` opcional: inteiro entre `1` e `10`
+
+Erros comuns nesta modalidade:
+
+- `requestId` inválido
+- `domainId` inválido
+- `inputType` incompatível com `text`
+- ausência de conteúdo utilizável
 
 ### Opção 2: multipart com arquivo
 
@@ -338,10 +377,10 @@ Headers:
 
 Campos esperados:
 
-- `file` obrigatório
-- `domainId` opcional
-- `cardsCount` opcional
-- `requestId` opcional
+- `file` obrigatório: arquivo PDF ou imagem
+- `domainId` opcional: UUID do domínio a ser usado sem reclassificação
+- `cardsCount` opcional: inteiro entre `1` e `10`
+- `requestId` opcional: UUID externo para rastreabilidade
 - `inputType` opcional; se informado, deve bater com o arquivo recebido:
   - `pdf` para `application/pdf`
   - `image` para imagem suportada
@@ -362,7 +401,7 @@ Validações aplicadas:
 
 ```json
 {
-  "requestId": "optional-request-id",
+  "requestId": "9ff3f8e1-0b40-4bd0-80e8-0f5171963d4e",
   "inputType": "pdf",
   "summary": "Resumo geral em PT-BR.",
   "domain": {
@@ -391,7 +430,7 @@ Observações:
 
 ```json
 {
-  "requestId": "optional-request-id",
+  "requestId": "9ff3f8e1-0b40-4bd0-80e8-0f5171963d4e",
   "inputType": "image",
   "summary": "Resumo geral em PT-BR.",
   "domain": null,

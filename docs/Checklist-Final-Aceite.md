@@ -21,7 +21,7 @@
 - [x] CRUD de cards
 - [x] processamento síncrono com texto, imagem e PDF
 - [x] extração textual de PDF pesquisável
-- [x] fallback para OCR de PDF escaneado
+- [x] rejeição explícita de PDF sem texto utilizável
 - [x] classificação automática de domínio
 - [x] sugestão de domínio quando não houver aderência
 - [x] persistência condicional de cards gerados

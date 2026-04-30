@@ -10,7 +10,6 @@
 - O processamento deve ser síncrono.
 - O processamento deve aceitar `domainId` opcional e `cardsCount` com mínimo `1`, máximo `10` e padrão `3`.
 - O sistema deve extrair texto de PDF textual localmente.
-- O sistema deve converter PDF escaneado para imagem e aplicar OCR via OpenAI.
 - O sistema deve aplicar OCR via OpenAI para imagens.
 - O sistema deve enviar o conteúdo textual obtido à OpenAI para classificação de domínio, sugestão de domínio, geração de resumo e geração de cards.
 - O sistema deve operar em PT-BR para resumo, cards e sugestão de domínio.
@@ -31,7 +30,7 @@
 
 - Usar `pino` ou equivalente para logs estruturados.
 - Usar `prom-client` para métricas.
-- Usar `multer`, `file-type`, `sharp` e `poppler-utils` no MVP.
+- Usar `multer`, `file-type` e `sharp` no MVP.
 
 ## 2. Lacunas e ambiguidades
 
@@ -73,7 +72,7 @@ A ordem adotada parte da base operacional e contratos transversais, depois fixa 
 | 19 | DTOs e validações | Definir schemas de card para body, params e query do CRUD de cards | 17 | Fato confirmado: Arquitetura seções 4 e 6.2; RF-10; RNF-02 | Schemas validam `front`, `back`, `approach`, filtros confirmados e mensagens determinísticas | Alta |
 | 20 | DTOs e validações | Definir contratos e schemas do processamento para `text`, `multipart`, `domainId`, `cardsCount` e resposta estruturada | 9, 15, 17 | Fato confirmado: Arquitetura seções 6.3, 7.4 e 9.4; RF-14, RF-20 | Schemas garantem origem única, limites confirmados e contrato de saída consistente | Alta |
 | 21 | Integrações externas | Implementar provedores de arquivo para validar MIME/extensão, gerenciar temporários e sanitizar texto de entrada | 20 | Fato confirmado: Arquitetura seções 5, 10.1, 10.3 e 11.3 | Upload inválido é rejeitado, arquivos temporários são apagados e texto é sanitizado sem persistência bruta | Alta |
-| 22 | Integrações externas | Implementar extração textual local de PDF e fallback de PDF escaneado para conversão em imagem | 21 | Fato confirmado: RF-11, RF-31; Arquitetura seções 6.3 e 10.2 | PDF textual retorna texto; PDF sem texto dispara fluxo de conversão para imagem conforme pipeline definido | Alta |
+| 22 | Integrações externas | Implementar extração textual local de PDF | 21 | Fato confirmado: RF-11, RF-31; Arquitetura seções 6.3 e 10.2 | PDF textual retorna texto; PDF sem texto utilizável é rejeitado | Alta |
 | 23 | Integrações externas | Implementar adaptador próprio da OpenAI com timeout, cancelamento, retry transitório e validação estruturada | 20 | Fato confirmado: Arquitetura seção 9; RNF-08, RNF-09, RNF-15 | Adaptador cancela chamadas acima de `30s`, limita retry transitório e valida respostas por schema antes de retornar | Alta |
 | 24 | Services / regras de negócio | Implementar orquestração de resolução de domínio para usar domínio informado ou classificar entre domínios existentes | 16, 23 | Fato confirmado: RF-15 a RF-18, RF-24 a RF-29; RB-08 a RB-13 | Serviço rejeita domínio inválido, classifica apenas entre domínios existentes e retorna sugestão sem criar domínio automaticamente | Alta |
 | 25 | Services / regras de negócio | Implementar `ContentProcessingService` para extrair texto, validar conteúdo utilizável, gerar resumo/cards e controlar persistência transacional | 15, 17, 20, 22, 23, 24 | Fato confirmado: Arquitetura seção 6.3; CA-03 a CA-10 | Serviço conclui todo o fluxo síncrono, não persiste resumo, não persiste cards sem domínio resolvido e não deixa dados parciais inconsistentes | Alta |
@@ -122,7 +121,7 @@ A ordem adotada parte da base operacional e contratos transversais, depois fixa 
 | Persistir dados parciais inconsistentes | Falha entre geração IA e banco | Violação de `RNF-06` e `CA-09` | Persistir apenas após validação final e usar transação no fluxo de cards gerados. |
 | Aceitar upload malicioso ou inválido | MIME divergente, arquivo excessivo ou conteúdo não suportado | Risco de segurança e exaustão de recursos | Validar MIME/extensão, limites, resolução, páginas e rejeitar múltiplos arquivos. |
 | Vazar conteúdo sensível em logs ou erros | Logging indevido de texto extraído, prompt ou segredos | Exposição de dados e não conformidade de segurança | Sanitizar logs, padronizar erros e nunca registrar conteúdo bruto ou chave da OpenAI. |
-| Fragilizar o ambiente local por dependências nativas | Uso de `poppler-utils` e possível uso de `sharp` | Quebra do setup local e de testes de integração | Fixar dependências no container da API e validar readiness do ambiente. |
+| Fragilizar o ambiente local por dependências nativas | Possível uso de `sharp` | Quebra do setup local e de testes de integração | Evitar dependências nativas desnecessárias e validar readiness do ambiente. |
 | Divergir contratos entre arquitetura e implementação | Lacuna em formato de erro ou conteúdo utilizável | Retrabalho em controllers, testes e documentação | Registrar decisões faltantes na documentação técnica antes do aceite final. |
 
 ## 7. Critérios de pronto
