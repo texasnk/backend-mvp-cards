@@ -1,9 +1,12 @@
 import type {
   DomainClassificationResult,
+  GeneratedCardDraft,
   GeneratedStudyMaterial,
   OpenAiProcessingProvider,
   SuggestedDomain,
 } from "../../modules/processing/processing.service";
+import { CARD_APPROACHES } from "../../modules/cards/card.types";
+import type { CardApproach } from "../../modules/cards/card.types";
 import type { StudyDomain } from "../../modules/domains/domain.types";
 import { ExternalServiceError } from "../../shared/errors/app-error";
 import { ProcessingPromptBuilder } from "../../modules/processing/prompt-builder";
@@ -141,13 +144,13 @@ export class OpenAiGeneratorProvider implements OpenAiProcessingProvider {
 
     return {
       summary: parsed.summary,
-      cards: parsed.cards.map((card) => {
+      cards: parsed.cards.map((card: Record<string, unknown>): GeneratedCardDraft => {
         if (
           !card ||
           typeof card !== "object" ||
           typeof card.front !== "string" ||
           typeof card.back !== "string" ||
-          typeof card.approach !== "string"
+          !isCardApproach(card.approach)
         ) {
           throw new ExternalServiceError(
             "OpenAI returned an invalid card payload.",
@@ -173,3 +176,6 @@ function parseJson(text: string): any {
   }
 }
 
+function isCardApproach(value: unknown): value is CardApproach {
+  return typeof value === "string" && CARD_APPROACHES.includes(value as CardApproach);
+}

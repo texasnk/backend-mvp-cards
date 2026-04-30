@@ -1,5 +1,5 @@
 import express from "express";
-import type { AppConfig } from "../shared/config/app-config";
+import type { EnvironmentConfig } from "../shared/config/env";
 import type { Logger } from "../shared/logger/logger";
 import type { InMemoryMetricsRegistry } from "../shared/telemetry/metrics";
 import { httpErrorHandler } from "./errors/http-error-handler";
@@ -11,7 +11,7 @@ import { securityHeadersMiddleware } from "./middlewares/security-headers.middle
 import { createApiRoutes, type ApiControllers } from "./routes/api.routes";
 
 export interface CreateAppDependencies {
-  config: AppConfig;
+  config: EnvironmentConfig;
   logger: Logger;
   metrics: InMemoryMetricsRegistry;
   readinessCheck: ReadinessCheck;
@@ -27,6 +27,7 @@ export function createApp(controllers: ApiControllers, dependencies: CreateAppDe
   app.use(requestLoggingMiddleware(dependencies.logger, dependencies.metrics));
   app.use(
     createApiRoutes(controllers, {
+      config: dependencies.config,
       metrics: dependencies.metrics,
       readinessCheck: dependencies.readinessCheck,
       processingRateLimit: {

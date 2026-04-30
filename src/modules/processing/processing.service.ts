@@ -181,10 +181,12 @@ export class ContentProcessingService {
         };
       }
 
+      const resolvedDomain = domainResolution.domain;
+
       const persistedCards = await this.cardService.persistGeneratedCards(
         studyMaterial.cards.map((card) => ({
           id: this.idGenerator.generate(),
-          studyDomainId: domainResolution.domain.id,
+          studyDomainId: resolvedDomain.id,
           front: card.front,
           back: card.back,
           approach: card.approach,
@@ -193,7 +195,7 @@ export class ContentProcessingService {
 
       await this.processingRequestRepository.markSucceeded({
         id: input.requestId,
-        resolvedDomainId: domainResolution.domain.id,
+        resolvedDomainId: resolvedDomain.id,
         cardsCreated: studyMaterial.cards.length,
         cardsPersisted: persistedCards.length,
         suggestedDomainName: null,
@@ -204,7 +206,7 @@ export class ContentProcessingService {
         requestId: input.requestId,
         inputType: input.inputType,
         summary: studyMaterial.summary,
-        domain: domainResolution.domain,
+        domain: resolvedDomain,
         suggestedDomain: null,
         cards: persistedCards.map((card) => ({
           id: card.id,
