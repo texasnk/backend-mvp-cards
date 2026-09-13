@@ -1,0 +1,84 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model CardReview {
+  id          String   @id @default(uuid()) @db.Uuid
+  cardId      String   @map("card_id") @db.Uuid
+  rating      String
+  previousState String @map("previous_state")
+  nextState   String   @map("next_state")
+  reviewedAt  DateTime @default(now()) @map("reviewed_at") @db.Timestamptz(6)
+  dueAt       DateTime @map("due_at") @db.Timestamptz(6)
+  intervalDays Int     @map("interval_days")
+  easeFactor  Decimal  @map("ease_factor") @db.Decimal(4, 2)
+  card        Card     @relation(fields: [cardId], references: [id], onDelete: Cascade)
+
+  @@index([cardId, reviewedAt])
+  @@map("card_reviews")
+}
+
+model StudyDomain {
+  id             String   @id @db.Uuid
+  name           String
+  nameNormalized String   @unique @map("name_normalized")
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime @default(now()) @map("updated_at") @db.Timestamptz(6)
+  cards          Card[]
+  providedProcessingRequests ProcessingRequest[] @relation("provided_processing_domain")
+  resolvedProcessingRequests ProcessingRequest[] @relation("resolved_processing_domain")
+
+  @@map("study_domains")
+}
+
+model ProcessingRequest {
+  id                  String      @id @db.Uuid
+  inputType           String      @map("input_type")
+  providedDomainId    String?     @map("provided_domain_id") @db.Uuid
+  resolvedDomainId    String?     @map("resolved_domain_id") @db.Uuid
+  status              String
+  cardsRequested      Int         @map("cards_requested") @db.SmallInt
+  cardsCreated        Int         @default(0) @map("cards_created") @db.SmallInt
+  cardsPersisted      Int         @default(0) @map("cards_persisted") @db.SmallInt
+  suggestedDomainName String?     @map("suggested_domain_name")
+  extractedTextChars  Int         @default(0) @map("extracted_text_chars")
+  failureCode         String?     @map("failure_code")
+  failureReason       String?     @map("failure_reason")
+  startedAt           DateTime    @map("started_at") @db.Timestamptz(6)
+  finishedAt          DateTime?   @map("finished_at") @db.Timestamptz(6)
+  providedDomain      StudyDomain? @relation("provided_processing_domain", fields: [providedDomainId], references: [id], onDelete: SetNull)
+  resolvedDomain      StudyDomain? @relation("resolved_processing_domain", fields: [resolvedDomainId], references: [id], onDelete: SetNull)
+
+  @@index([status])
+  @@index([startedAt(sort: Desc)])
+  @@map("processing_requests")
+}
+
+model Card {
+  id            String       @id @db.Uuid
+  studyDomainId String       @map("study_domain_id") @db.Uuid
+  sourceType    String       @map("source_type")
+  approach      String?
+  front         String
+  back          String
+  createdAt     DateTime     @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt     DateTime     @default(now()) @map("updated_at") @db.Timestamptz(6)
+  state         String       @default("new")
+  dueAt         DateTime     @default(now()) @map("due_at") @db.Timestamptz(6)
+  learningStep  Int          @default(0) @map("learning_step") @db.SmallInt
+  intervalDays  Int          @default(0) @map("interval_days")
+  easeFactor    Decimal      @default(2.50) @map("ease_factor") @db.Decimal(4, 2)
+  studyDomain   StudyDomain  @relation(fields: [studyDomainId], references: [id], onDelete: Restrict)
+  reviews       CardReview[]
+
+  @@index([studyDomainId])
+  @@index([sourceType])
+  @@index([approach])
+  @@index([studyDomainId, dueAt])
+  @@map("cards")
+}

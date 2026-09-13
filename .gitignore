@@ -31,7 +31,6 @@
 *.db
 
 # Arquivos do sistema e das IDEs
-.DS_Store
 Thumbs.db
 .vscode/
 .idea/
