@@ -1,9 +1,38 @@
+# Dependências Node.js
+**/node_modules/
+
+# Variáveis de ambiente e segredos
 .env
-.codex
-node_modules
-dist
-coverage
-tmp
+.env.*
+**/.env
+**/.env.*
+!.env.example
+!.env.*.example
+!**/.env.example
+!**/.env.*.example
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Builds, testes e arquivos temporários
+**/dist/
+**/build/
+**/coverage/
+**/.cache/
+**/tmp/
+**/uploads/
 *.log
 *.tsbuildinfo
-uploads
+
+# Bancos locais e dados de desenvolvimento
+*.sqlite
+*.sqlite3
+*.db
+
+# Arquivos do sistema e das IDEs
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+.codex/

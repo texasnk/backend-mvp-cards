@@ -1,280 +1,97 @@
-# Backend MVP Cards
+# Cards MVP
 
- [![CI](https://github.com/texasnk/backend-mvp-cards/actions/workflows/ci.yml/badge.svg)](https://github.com/texasnk/backend-mvp-cards/actions/workflows/ci.yml)
-  ![Node.js](https://img.shields.io/badge/node-22.x-339933?logo=node.js&logoColor=white)
-  ![TypeScript](https://img.shields.io/badge/typescript-5.x-3178C6?logo=typescript&logoColor=white)
-  [![License](https://img.shields.io/badge/license-MIT-green)](./LICENSE)
-  
-## Descrição
+Monorepo do MVP de criação e organização de flashcards. Ele reúne uma API para gestão e geração de cards a partir de texto, imagem ou PDF e uma interface web para consumo dessa API.
 
-API backend em TypeScript para um MVP de geração e organização de material de estudo.
+## Arquitetura
 
-No escopo do MVP, o backend atende quatro objetivos centrais:
-
-- permitir que um gestor de conteúdo mantenha domínios de estudo para organizar o acervo por assunto
-- permitir a manutenção de cards manuais com frente, verso e vínculo obrigatório a um domínio
-- permitir que um integrador envie texto, imagem ou PDF para obter resumo e cards gerados automaticamente
-- permitir que o sistema use um domínio informado ou tente classificar o conteúdo em um domínio existente, com sugestão de novo domínio quando não houver aderência suficiente
-
-O projeto foi estruturado como um monólito modular com foco em:
-
-- simplicidade operacional do MVP
-- contratos HTTP claros
-- rastreabilidade do processamento
-- separação entre regras de negócio, providers e persistência
-
-## Tecnologias
-
-- Node.js 22
-- TypeScript
-- Express
-- PostgreSQL
-- Jest
-- Docker Compose
-- OpenAI API
-- `pdf-parse-new` para extração textual de PDF
-
-## Escopo atual
-
-- CRUD de `study_domains`
-- CRUD de `cards`
-- `POST /api/v1/processings` com suporte a:
-  - `application/json` com `text`
-  - `multipart/form-data` com `file`
-- OCR por visão para imagem
-- extração textual local para PDF pesquisável
-- classificação automática de domínio e sugestão de novo domínio
-- geração de resumo e cards via OpenAI
-- `health/live`, `health/ready` e `metrics`
-
-## O que o MVP entrega
-
-- organização de conhecimento por domínios de estudo reutilizáveis
-- criação e manutenção de cards manuais para formar uma base inicial de estudo
-- transformação de conteúdo bruto em resumo e cards em PT-BR a partir de texto, imagem ou PDF pesquisável
-- persistência automática apenas quando houver domínio válido informado ou domínio resolvido com aderência suficiente
-- retorno de `summary`, `cards` e sugestão de domínio mesmo quando não houver persistência dos cards gerados
-
-## Público e uso esperado
-
-- times ou pessoas que organizam conteúdo educacional por tema
-- integradores que precisam de um backend síncrono para alimentar fluxos próprios de estudo
-- cenários em que o frontend, o algoritmo de revisão espaçada e o planejamento pedagógico ainda ficarão para uma próxima etapa
-
-## Estrutura de documentação
-
-- [docs/API-Reference.md](docs/API-Reference.md)
-- [docs/USs.md](docs/USs.md)
-- [docs/Arquitetura.md](docs/Arquitetura.md)
-- [docs/Checklist-Implementacao.md](docs/Checklist-Implementacao.md)
-- [docs/Checklist-Final-Aceite.md](docs/Checklist-Final-Aceite.md)
-- [docs/Validacao-Final.md](docs/Validacao-Final.md)
-
-## Arquivos obrigatórios presentes
-
-- `package.json`
-- `tsconfig.json`
-- `jest.config.ts`
-- `.env.example`
-- `docker-compose.yml`
-- `Dockerfile`
-- `LICENSE`
-
-## Instalação
-
-### Requisitos
-
-- Node.js 22+
-- PostgreSQL local ou Docker
-
-### Variáveis de ambiente
-
-Use `.env.example` como base.
-
-| Variável | Obrigatória | Descrição |
-|---|---|---|
-| `PORT` | não | Porta HTTP da API |
-| `DATABASE_URL` | sim | String de conexão com PostgreSQL |
-| `OPENAI_API_KEY` | sim | Chave da OpenAI |
-| `OPENAI_MODEL_TEXT` | sim | Modelo para classificação, sugestão e geração |
-| `OPENAI_MODEL_VISION` | sim | Modelo para OCR multimodal |
-| `MAX_FILE_SIZE_MB` | não | Limite de upload |
-| `MAX_TEXT_CHARS` | não | Limite de texto processável |
-| `MAX_CARDS_PER_REQUEST` | não | Máximo de cards gerados |
-| `DEFAULT_CARDS_PER_REQUEST` | não | Quantidade padrão de cards |
-| `REQUEST_TIMEOUT_MS` | não | Timeout dos adaptadores externos |
-| `ALLOWED_CORS_ORIGINS` | não | Lista separada por vírgula |
-| `LOG_LEVEL` | não | Nível de log |
-| `DOMAIN_MATCH_THRESHOLD` | não | Limiar de aderência do domínio classificado |
-| `PROCESSING_RATE_LIMIT_MAX_REQUESTS` | não | Limite de requisições de processamento |
-| `PROCESSING_RATE_LIMIT_WINDOW_MS` | não | Janela do rate limit |
-| `MAX_PDF_PAGES` | não | Limite de páginas por PDF |
-| `MAX_IMAGE_WIDTH` | não | Largura máxima de imagem |
-| `MAX_IMAGE_HEIGHT` | não | Altura máxima de imagem |
-| `BODY_LIMIT` | não | Limite do body JSON |
-
-### Passos
-
-1. Instale dependências:
-
-```bash
-npm install
+```text
+.
+├── backend/   # API REST, regras de negócio, integrações e migrations
+└── frontend/  # aplicação web
 ```
 
-2. Ajuste o ambiente:
+| Aplicação  | Stack                                            | Responsabilidade                                                    |
+| ---------- | ------------------------------------------------ | ------------------------------------------------------------------- |
+| `backend`  | Node.js, TypeScript, Express, PostgreSQL, OpenAI | CRUD de domínios e cards; processamento e geração assistida por IA. |
+| `frontend` | React, TypeScript, Vite, React Query, Zustand    | Interface para os fluxos do MVP.                                    |
+
+## Pré-requisitos
+
+- Node.js 22 ou superior
+- npm
+- PostgreSQL 16 ou Docker Compose
+- Uma chave da OpenAI para os fluxos de processamento do backend
+
+## Início rápido
+
+1. Crie os arquivos locais de configuração a partir dos exemplos:
+
+   ```bash
+   cp backend/.env.example backend/.env
+   cp frontend/.env.example frontend/.env
+   ```
+
+   No PowerShell, use `Copy-Item backend/.env.example backend/.env` (e o equivalente para o frontend).
+
+2. Ajuste `backend/.env`, principalmente `DATABASE_URL` e `OPENAI_API_KEY`.
+
+3. Instale as dependências:
+
+   ```bash
+   npm ci --prefix backend
+   npm ci --prefix frontend
+   ```
+
+4. Suba o PostgreSQL e aplique as migrations:
+
+   ```bash
+   cd backend
+   docker compose up -d postgres
+   npm run db:migrate
+   ```
+
+5. Em terminais separados, inicie as aplicações:
+
+   ```bash
+   npm --prefix backend run dev
+   npm --prefix frontend run dev
+   ```
+
+| Serviço  | Endereço padrão                |
+| -------- | ------------------------------ |
+| Frontend | `http://localhost:5173`        |
+| API      | `http://localhost:3000`        |
+| API base | `http://localhost:3000/api/v1` |
+
+## Variáveis de ambiente
+
+Os contratos de configuração estão nos arquivos `.env.example` de cada aplicação.
+
+| Arquivo         | Variáveis relevantes                                                                       |
+| --------------- | ------------------------------------------------------------------------------------------ |
+| `backend/.env`  | `PORT`, `DATABASE_URL`, `OPENAI_API_KEY`, modelos OpenAI, CORS e limites de processamento. |
+| `frontend/.env` | `VITE_API_URL`, URL base da API usada pelo cliente web.                                    |
+
+Nunca versione arquivos `.env`, chaves privadas ou certificados. O `.gitignore` raiz cobre esses arquivos e mantém apenas os modelos `.env.example` sob controle de versão.
+
+## API e documentação
+
+Os principais recursos da API são domínios de estudo, cards e processamentos. A referência completa de endpoints, contratos HTTP e decisões de arquitetura está em [backend/docs](backend/docs).
+
+Para executar API e banco por Docker, a configuração está em `backend/docker-compose.yml`:
 
 ```bash
-cp .env.example .env
-```
-
-3. Suba o banco local com Docker:
-
-```bash
-docker compose up -d postgres
-```
-
-4. Rode as migrations:
-
-```bash
-npm run db:migrate
-```
-
-5. Suba a API:
-
-```bash
-npm run dev
-```
-
-## Execução com Docker Compose
-
-```bash
+cd backend
 docker compose up --build
 ```
 
-O compose sobe `postgres` e `api`. A API usa o `DATABASE_URL` interno do compose.
+## Qualidade
 
-## Uso
-
-### Scripts
+Antes de abrir um pull request, execute:
 
 ```bash
-npm run dev
-npm run build
-npm run start
-npm test
-npm run db:migrate
+npm --prefix backend run build
+npm --prefix backend test
+npm --prefix frontend run build
+npm --prefix frontend run lint
 ```
-
-### Endpoints principais
-
-| Método | Rota | Objetivo |
-|---|---|---|
-| `POST` | `/api/v1/domains` | criar domínio |
-| `GET` | `/api/v1/domains` | listar domínios |
-| `GET` | `/api/v1/domains/:id` | consultar domínio |
-| `PATCH` | `/api/v1/domains/:id` | atualizar domínio |
-| `DELETE` | `/api/v1/domains/:id` | remover domínio |
-| `POST` | `/api/v1/cards` | criar card manual |
-| `GET` | `/api/v1/cards` | listar cards |
-| `GET` | `/api/v1/cards/:id` | consultar card |
-| `PATCH` | `/api/v1/cards/:id` | atualizar card |
-| `DELETE` | `/api/v1/cards/:id` | remover card |
-| `POST` | `/api/v1/processings` | processar conteúdo |
-| `GET` | `/api/v1/health/live` | liveness |
-| `GET` | `/api/v1/health/ready` | readiness |
-| `GET` | `/api/v1/metrics` | métricas HTTP |
-
-### Contratos esperados
-
-Os contratos completos de request e response estão em [docs/API-Reference.md](docs/API-Reference.md).
-
-Cobertura do guia:
-
-- payloads esperados por endpoint
-- descrição do que representa cada campo principal
-- enums disponíveis por contrato
-- responses de sucesso
-- responses de erro
-- paginação
-- processamento com `text`
-- processamento com `multipart/form-data`
-- health e metrics
-
-### Exemplos de processamento
-
-#### Texto puro
-
-```bash
-curl -X POST http://localhost:3000/api/v1/processings \
-  -H "Content-Type: application/json" \
-  -d '{
-    "text": "Texto base para gerar cards",
-    "cardsCount": 3
-  }'
-```
-
-#### Upload de PDF ou imagem
-
-```bash
-curl -X POST http://localhost:3000/api/v1/processings \
-  -F "file=@/caminho/arquivo.pdf" \
-  -F "cardsCount=3"
-```
-
-## Integração com IA
-
-A IA é usada em quatro responsabilidades principais:
-
-- OCR de imagem
-- classificação de conteúdo em um domínio existente
-- geração de resumo, cards e sugestão de domínio
-
-Fluxo atual:
-
-1. o conteúdo é convertido para texto utilizável
-2. se não houver `domainId`, a IA tenta classificar entre os domínios existentes
-3. se não houver aderência suficiente, a IA pode sugerir um novo domínio
-4. a IA gera resumo e cards em PT-BR
-5. os cards só são persistidos quando houver domínio resolvido
-
-Observações importantes:
-
-- o resumo não é persistido
-- o texto bruto extraído não é persistido
-- o arquivo original não é persistido
-- respostas da IA são tratadas como não confiáveis e passam por validação estrutural mínima
-- PDFs sem camada de texto utilizável são rejeitados no fluxo atual
-
-## Limitações atuais
-
-- o aceite final ainda depende de validação com PostgreSQL real
-- o fluxo de processamento ainda precisa ser validado com chave OpenAI real
-- ainda faltam testes de integração HTTP
-- ainda faltam testes negativos de segurança
-- a persistência dos cards gerados ainda não está encapsulada em transação explícita
-
-## Próximos passos
-
-- criar uma metodologia de estudo sobre os cards gerados e manuais, definindo como revisar, consolidar e evoluir o conteúdo
-- definir um cronograma de estudo com cadência por domínio, quantidade de cards por sessão e critérios mínimos de progresso
-- introduzir algoritmo de revisão espaçada e agendamento de revisões, hoje fora do escopo do MVP
-- ampliar testes de integração HTTP, cenários negativos de segurança e cobertura do pipeline de processamento
-- encapsular a persistência dos cards gerados em transação explícita para reduzir risco de inconsistência parcial
-
-## Qualidade já validada
-
-- `npm run build` executado com sucesso em `2026-04-29`
-- `npm test` executado com sucesso em `2026-04-29`
-
-## Documentação relacionada
-
-- [API-Reference.md](docs/API-Reference.md)
-- [USs.md](docs/USs.md)
-- [Arquitetura.md](docs/Arquitetura.md)
-- [Planejamento.md](docs/Planejamento.md)
-- [Checklist-Implementacao.md](docs/Checklist-Implementacao.md)
-- [Validacao-Final.md](docs/Validacao-Final.md)
-
-## Licença
-
-Este projeto possui licença MIT versionada no repositório em [LICENSE](LICENSE).
