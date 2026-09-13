@@ -1,15 +1,14 @@
-import { CardService } from "../cards/card.service";
-import type { CardApproach } from "../cards/card.types";
-import { DomainService } from "../domains/domain.service";
-import type { StudyDomain } from "../domains/domain.types";
-import { ProcessingRequestRepository } from "./processing.repository";
-import type { ProcessingInputType } from "./processing.types";
+import type { IGeneratedCardsService, CardApproach } from "../cards/types";
+import type { IDomainLookupService, IStudyDomain } from "../domains/types";
+import type { IProcessingRequestRepository } from "../../repositories/processing/types";
+import type { ProcessingInputType } from "./types";
 import {
   ExternalServiceError,
   NotFoundError,
   TimeoutError,
   ValidationError,
 } from "../../shared/errors/app-error";
+import { toAppError } from "../../shared/errors/error-handler";
 
 export interface TextProcessingInput {
   requestId: string;
@@ -90,7 +89,7 @@ export interface VisionOcrProvider {
 export interface OpenAiProcessingProvider {
   classifyDomain(input: {
     text: string;
-    domains: StudyDomain[];
+    domains: IStudyDomain[];
   }): Promise<DomainClassificationResult>;
   suggestDomain(input: { text: string }): Promise<SuggestedDomain | null>;
   generateStudyMaterial(input: {
@@ -120,18 +119,20 @@ interface DomainResolutionResult {
 
 export class ContentProcessingService {
   constructor(
-    private readonly processingRequestRepository: ProcessingRequestRepository,
-    private readonly domainService: DomainService,
-    private readonly cardService: CardService,
+    private readonly processingRequestRepository: IProcessingRequestRepository,
+    private readonly domainService: IDomainLookupService,
+    private readonly cardService: IGeneratedCardsService,
     private readonly textSanitizer: TextSanitizer,
     private readonly pdfTextExtractor: PdfTextExtractor,
     private readonly visionOcrProvider: VisionOcrProvider,
     private readonly openAiProvider: OpenAiProcessingProvider,
     private readonly idGenerator: IdGenerator,
     private readonly options: ProcessingServiceOptions,
-  ) { }
+  ) {}
 
-  async process(input: ProcessingServiceInput): Promise<ProcessingServiceResult> {
+  async process(
+    input: ProcessingServiceInput,
+  ): Promise<ProcessingServiceResult> {
     const cardsCount = this.resolveCardsCount(input.cardsCount);
 
     await this.processingRequestRepository.createStarted({
@@ -143,7 +144,10 @@ export class ContentProcessingService {
 
     try {
       const extractedText = await this.extractUsableText(input);
-      const domainResolution = await this.resolveDomain(input.domainId, extractedText);
+      const domainResolution = await this.resolveDomain(
+        input.domainId,
+        extractedText,
+      );
       const studyMaterial = await this.openAiProvider.generateStudyMaterial({
         text: extractedText,
         cardsCount,
@@ -218,7 +222,7 @@ export class ContentProcessingService {
         extractedTextChars: 0,
       });
 
-      throw error;
+      throw toAppError(error, "Não foi possível processar o conteúdo informado.");
     }
   }
 
@@ -238,7 +242,9 @@ export class ContentProcessingService {
     return resolvedCount;
   }
 
-  private async extractUsableText(input: ProcessingServiceInput): Promise<string> {
+  private async extractUsableText(
+    input: ProcessingServiceInput,
+  ): Promise<string> {
     let extractedText = "";
 
     if (input.inputType === "text") {
@@ -309,7 +315,9 @@ export class ContentProcessingService {
       classification.domainId &&
       classification.confidence >= this.options.domainMatchThreshold
     ) {
-      const resolvedDomain = await this.domainService.getById(classification.domainId);
+      const resolvedDomain = await this.domainService.getById(
+        classification.domainId,
+      );
 
       return {
         domain: {
@@ -327,7 +335,9 @@ export class ContentProcessingService {
     };
   }
 
-  private async safelySuggestDomain(text: string): Promise<SuggestedDomain | null> {
+  private async safelySuggestDomain(
+    text: string,
+  ): Promise<SuggestedDomain | null> {
     const suggestion = await this.openAiProvider.suggestDomain({ text });
 
     if (!suggestion) {
@@ -350,7 +360,10 @@ export class ContentProcessingService {
     const summary = material.summary.trim();
 
     if (summary.length === 0) {
-      throw new ExternalServiceError("The AI provider returned an empty summary.", "INVALID_AI_SUMMARY");
+      throw new ExternalServiceError(
+        "The AI provider returned an empty summary.",
+        "INVALID_AI_SUMMARY",
+      );
     }
 
     if (material.cards.length !== requestedCardsCount) {

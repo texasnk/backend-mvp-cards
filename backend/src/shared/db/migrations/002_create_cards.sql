@@ -24,7 +24,7 @@ create table if not exists cards (
   constraint cards_front_length_check
     check (char_length(trim(front)) >= 3),
   constraint cards_back_length_check
-    check (char_length(trim(back)) >= 3)
+    check (char_length(trim(back)) >= 1)
 );
 
 create index if not exists cards_study_domain_id_idx

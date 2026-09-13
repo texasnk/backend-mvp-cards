@@ -14,7 +14,10 @@ async function main(): Promise<void> {
 
   try {
     for (const migrationFile of migrationFiles) {
-      const sql = await readFile(join(migrationsDirectory, migrationFile), "utf8");
+      const sql = await readFile(
+        join(migrationsDirectory, migrationFile),
+        "utf8",
+      );
       await db.query(sql);
       console.log(`Applied migration: ${migrationFile}`);
     }
@@ -24,4 +27,3 @@ async function main(): Promise<void> {
 }
 
 void main();
-

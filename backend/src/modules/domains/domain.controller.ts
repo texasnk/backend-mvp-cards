@@ -1,11 +1,12 @@
 import { randomUUID } from "node:crypto";
 import type { Request, Response } from "express";
-import { DomainService } from "./domain.service";
+import { DomainService } from "../../services/domains/domain.service";
 import {
   parseCreateDomainBody,
   parseDomainParams,
   parseListDomainsQuery,
   parseUpdateDomainBody,
+  parseDeleteManyDomainsBody,
 } from "./domain.schemas";
 
 export class DomainController {
@@ -48,5 +49,16 @@ export class DomainController {
     const params = parseDomainParams(request.params);
     await this.domainService.delete(params.id);
     response.status(204).send();
+  };
+
+  /** SPEC-DOM-32: Expõe exclusão parcial de domínios e cards associados. */
+  deleteMany = async (request: Request, response: Response): Promise<void> => {
+    response
+      .status(200)
+      .json(
+        await this.domainService.deleteMany(
+          parseDeleteManyDomainsBody(request.body).ids,
+        ),
+      );
   };
 }

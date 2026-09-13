@@ -23,7 +23,10 @@ export class MimeValidator {
     const allowedExtensions = this.allowedMimeTypes.get(mimeType);
 
     if (!allowedExtensions) {
-      throw new ValidationError("Unsupported file MIME type.", "UNSUPPORTED_MIME_TYPE");
+      throw new ValidationError(
+        "Unsupported file MIME type.",
+        "UNSUPPORTED_MIME_TYPE",
+      );
     }
 
     const fileExtension = extname(originalName).toLowerCase();
@@ -36,4 +39,3 @@ export class MimeValidator {
     }
   }
 }
-

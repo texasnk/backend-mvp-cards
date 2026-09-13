@@ -2,12 +2,20 @@ export class InMemoryMetricsRegistry {
   private readonly counters = new Map<string, number>();
   private readonly durations = new Map<string, number[]>();
 
-  increment(name: string, labels: Record<string, string> = {}, value = 1): void {
+  increment(
+    name: string,
+    labels: Record<string, string> = {},
+    value = 1,
+  ): void {
     const key = buildKey(name, labels);
     this.counters.set(key, (this.counters.get(key) ?? 0) + value);
   }
 
-  observeDuration(name: string, durationMs: number, labels: Record<string, string> = {}): void {
+  observeDuration(
+    name: string,
+    durationMs: number,
+    labels: Record<string, string> = {},
+  ): void {
     const key = buildKey(name, labels);
     const durations = this.durations.get(key) ?? [];
     durations.push(durationMs);
@@ -47,4 +55,3 @@ function buildKey(name: string, labels: Record<string, string>): string {
 
   return `${name}{${renderedLabels}}`;
 }
-

@@ -17,6 +17,26 @@ export interface ListDomainsQuery {
   page: number;
   pageSize: number;
 }
+export interface DeleteManyDomainsBody {
+  ids: string[];
+}
+
+/** SPEC-DOM-31: Valida IDs de domínios para exclusão em massa. */
+export function parseDeleteManyDomainsBody(
+  body: unknown,
+): DeleteManyDomainsBody {
+  const value = asObject(body);
+  if (
+    !Array.isArray(value.ids) ||
+    value.ids.length === 0 ||
+    value.ids.some((id) => typeof id !== "string" || !id.trim())
+  )
+    throw new ValidationError(
+      'Field "ids" must be a non-empty string array.',
+      "INVALID_FIELD",
+    );
+  return { ids: [...new Set(value.ids.map((id) => id.trim()))] };
+}
 
 export function parseDomainParams(params: unknown): DomainParams {
   const value = asObject(params);
@@ -53,7 +73,10 @@ export function parseListDomainsQuery(query: unknown): ListDomainsQuery {
 
 function asObject(value: unknown): Record<string, unknown> {
   if (!value || typeof value !== "object") {
-    throw new ValidationError("Invalid request object.", "INVALID_REQUEST_OBJECT");
+    throw new ValidationError(
+      "Invalid request object.",
+      "INVALID_REQUEST_OBJECT",
+    );
   }
 
   return value as Record<string, unknown>;
@@ -61,7 +84,10 @@ function asObject(value: unknown): Record<string, unknown> {
 
 function asNonEmptyString(value: unknown, field: string): string {
   if (typeof value !== "string" || value.trim().length === 0) {
-    throw new ValidationError(`Field "${field}" must be a non-empty string.`, "INVALID_FIELD");
+    throw new ValidationError(
+      `Field "${field}" must be a non-empty string.`,
+      "INVALID_FIELD",
+    );
   }
 
   return value.trim();
@@ -73,14 +99,21 @@ function asOptionalString(value: unknown): string | undefined {
   }
 
   if (typeof value !== "string") {
-    throw new ValidationError('Field "search" must be a string.', "INVALID_QUERY");
+    throw new ValidationError(
+      'Field "search" must be a string.',
+      "INVALID_QUERY",
+    );
   }
 
   const trimmedValue = value.trim();
   return trimmedValue.length > 0 ? trimmedValue : undefined;
 }
 
-function asPositiveInteger(value: unknown, defaultValue: number, field: string): number {
+function asPositiveInteger(
+  value: unknown,
+  defaultValue: number,
+  field: string,
+): number {
   if (value === undefined) {
     return defaultValue;
   }
@@ -88,9 +121,11 @@ function asPositiveInteger(value: unknown, defaultValue: number, field: string):
   const parsed = Number(value);
 
   if (!Number.isInteger(parsed) || parsed < 1) {
-    throw new ValidationError(`Field "${field}" must be a positive integer.`, "INVALID_QUERY");
+    throw new ValidationError(
+      `Field "${field}" must be a positive integer.`,
+      "INVALID_QUERY",
+    );
   }
 
   return parsed;
 }
-

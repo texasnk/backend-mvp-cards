@@ -11,4 +11,3 @@ export function securityHeadersMiddleware(
   response.setHeader("X-DNS-Prefetch-Control", "off");
   next();
 }
-

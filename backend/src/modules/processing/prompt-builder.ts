@@ -1,4 +1,4 @@
-import type { StudyDomain } from "../domains/domain.types";
+import type { IStudyDomain } from "../../services/domains/types";
 
 export class ProcessingPromptBuilder {
   buildClassificationInstructions(): string {
@@ -29,7 +29,7 @@ export class ProcessingPromptBuilder {
     ].join(" ");
   }
 
-  buildClassificationInput(text: string, domains: StudyDomain[]): unknown {
+  buildClassificationInput(text: string, domains: IStudyDomain[]): unknown {
     return [
       {
         role: "user",
@@ -81,4 +81,3 @@ export class ProcessingPromptBuilder {
     ];
   }
 }
-

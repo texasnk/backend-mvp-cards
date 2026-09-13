@@ -39,3 +39,8 @@ export class TimeoutError extends AppError {
   }
 }
 
+export class InternalServerError extends AppError {
+  constructor(message: string, code = "INTERNAL_SERVER_ERROR") {
+    super(message, code, 500);
+  }
+}

@@ -1,5 +1,9 @@
 import { Pool, type PoolClient, type QueryResult as PgQueryResult } from "pg";
-import type { DatabaseClient, QueryResult, QueryResultRow } from "./database.types";
+import type {
+  DatabaseClient,
+  QueryResult,
+  QueryResultRow,
+} from "./database.types";
 
 export class PostgresDatabaseClient implements DatabaseClient {
   constructor(private readonly client: Pool | PoolClient) {}
@@ -8,7 +12,10 @@ export class PostgresDatabaseClient implements DatabaseClient {
     sql: string,
     params: readonly unknown[] = [],
   ): Promise<QueryResult<T>> {
-    const result: PgQueryResult = await this.client.query(sql, params as unknown[]);
+    const result: PgQueryResult = await this.client.query(
+      sql,
+      params as unknown[],
+    );
 
     return {
       rows: result.rows as T[],
@@ -30,7 +37,9 @@ export class PostgresConnectionManager {
     return new PostgresDatabaseClient(this.pool);
   }
 
-  async withTransaction<T>(callback: (db: PostgresDatabaseClient) => Promise<T>): Promise<T> {
+  async withTransaction<T>(
+    callback: (db: PostgresDatabaseClient) => Promise<T>,
+  ): Promise<T> {
     const client = await this.pool.connect();
 
     try {
@@ -55,4 +64,3 @@ export class PostgresConnectionManager {
     await this.pool.end();
   }
 }
-

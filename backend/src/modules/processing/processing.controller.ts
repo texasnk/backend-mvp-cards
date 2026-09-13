@@ -4,7 +4,7 @@ import { ValidationError } from "../../shared/errors/app-error";
 import { FileInspector } from "../../providers/files/file-inspector";
 import { MimeValidator } from "../../providers/files/mime-validator";
 import { TempFileManager } from "../../providers/files/temp-file-manager";
-import { ContentProcessingService } from "./processing.service";
+import { ContentProcessingService } from "../../services/processing/processing.service";
 import { parseCreateProcessingBody } from "./processing.schemas";
 
 export class ProcessingController {
@@ -57,10 +57,14 @@ export class ProcessingController {
         originalName: uploadedFile!.originalname,
       };
 
-      this.mimeValidator.validate(fileReference.mimeType, fileReference.originalName);
+      this.mimeValidator.validate(
+        fileReference.mimeType,
+        fileReference.originalName,
+      );
       await this.fileInspector.inspect(fileReference);
 
-      const inputType = fileReference.mimeType === "application/pdf" ? "pdf" : "image";
+      const inputType =
+        fileReference.mimeType === "application/pdf" ? "pdf" : "image";
 
       if (body.inputType && body.inputType !== inputType) {
         throw new ValidationError(

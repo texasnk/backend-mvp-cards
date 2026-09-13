@@ -23,7 +23,11 @@ export class JsonLogger implements Logger {
     this.write("error", message, context);
   }
 
-  private write(level: "info" | "warn" | "error", message: string, context: LogContext): void {
+  private write(
+    level: "info" | "warn" | "error",
+    message: string,
+    context: LogContext,
+  ): void {
     const payload = JSON.stringify({
       timestamp: new Date().toISOString(),
       level,
@@ -70,4 +74,3 @@ function isSensitiveField(key: string): boolean {
     normalized.includes("text")
   );
 }
-

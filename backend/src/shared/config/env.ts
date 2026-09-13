@@ -22,25 +22,45 @@ export interface EnvironmentConfig extends AppConfig {
   logLevel: string;
 }
 
-export function loadEnvironmentConfig(env: NodeJS.ProcessEnv = process.env): EnvironmentConfig {
+export function loadEnvironmentConfig(
+  env: NodeJS.ProcessEnv = process.env,
+): EnvironmentConfig {
   return {
     port: asInteger(env.PORT, 3000, "PORT"),
     databaseUrl: asRequiredString(env.DATABASE_URL, "DATABASE_URL"),
     openAiApiKey: asRequiredString(env.OPENAI_API_KEY, "OPENAI_API_KEY"),
-    openAiModelText: asRequiredString(env.OPENAI_MODEL_TEXT, "OPENAI_MODEL_TEXT"),
-    openAiModelVision: asRequiredString(env.OPENAI_MODEL_VISION, "OPENAI_MODEL_VISION"),
+    openAiModelText: asRequiredString(
+      env.OPENAI_MODEL_TEXT,
+      "OPENAI_MODEL_TEXT",
+    ),
+    openAiModelVision: asRequiredString(
+      env.OPENAI_MODEL_VISION,
+      "OPENAI_MODEL_VISION",
+    ),
     maxFileSizeMb: asInteger(env.MAX_FILE_SIZE_MB, 10, "MAX_FILE_SIZE_MB"),
     maxTextChars: asInteger(env.MAX_TEXT_CHARS, 10000, "MAX_TEXT_CHARS"),
-    maxCardsPerRequest: asInteger(env.MAX_CARDS_PER_REQUEST, 10, "MAX_CARDS_PER_REQUEST"),
+    maxCardsPerRequest: asInteger(
+      env.MAX_CARDS_PER_REQUEST,
+      10,
+      "MAX_CARDS_PER_REQUEST",
+    ),
     defaultCardsPerRequest: asInteger(
       env.DEFAULT_CARDS_PER_REQUEST,
       3,
       "DEFAULT_CARDS_PER_REQUEST",
     ),
-    requestTimeoutMs: asInteger(env.REQUEST_TIMEOUT_MS, 30000, "REQUEST_TIMEOUT_MS"),
+    requestTimeoutMs: asInteger(
+      env.REQUEST_TIMEOUT_MS,
+      30000,
+      "REQUEST_TIMEOUT_MS",
+    ),
     allowedCorsOrigins: asList(env.ALLOWED_CORS_ORIGINS),
     logLevel: asString(env.LOG_LEVEL, "info"),
-    domainMatchThreshold: asFloat(env.DOMAIN_MATCH_THRESHOLD, 0.8, "DOMAIN_MATCH_THRESHOLD"),
+    domainMatchThreshold: asFloat(
+      env.DOMAIN_MATCH_THRESHOLD,
+      0.8,
+      "DOMAIN_MATCH_THRESHOLD",
+    ),
     processingRateLimitMaxRequests: asInteger(
       env.PROCESSING_RATE_LIMIT_MAX_REQUESTS,
       20,
@@ -60,7 +80,10 @@ export function loadEnvironmentConfig(env: NodeJS.ProcessEnv = process.env): Env
 
 function asRequiredString(value: string | undefined, key: string): string {
   if (!value || value.trim().length === 0) {
-    throw new ValidationError(`Environment variable "${key}" is required.`, "INVALID_ENV");
+    throw new ValidationError(
+      `Environment variable "${key}" is required.`,
+      "INVALID_ENV",
+    );
   }
 
   return value.trim();
@@ -70,7 +93,11 @@ function asString(value: string | undefined, defaultValue: string): string {
   return value?.trim() || defaultValue;
 }
 
-function asInteger(value: string | undefined, defaultValue: number, key: string): number {
+function asInteger(
+  value: string | undefined,
+  defaultValue: number,
+  key: string,
+): number {
   if (!value) {
     return defaultValue;
   }
@@ -78,13 +105,20 @@ function asInteger(value: string | undefined, defaultValue: number, key: string)
   const parsed = Number(value);
 
   if (!Number.isInteger(parsed) || parsed <= 0) {
-    throw new ValidationError(`Environment variable "${key}" must be a positive integer.`, "INVALID_ENV");
+    throw new ValidationError(
+      `Environment variable "${key}" must be a positive integer.`,
+      "INVALID_ENV",
+    );
   }
 
   return parsed;
 }
 
-function asFloat(value: string | undefined, defaultValue: number, key: string): number {
+function asFloat(
+  value: string | undefined,
+  defaultValue: number,
+  key: string,
+): number {
   if (!value) {
     return defaultValue;
   }
@@ -92,7 +126,10 @@ function asFloat(value: string | undefined, defaultValue: number, key: string): 
   const parsed = Number(value);
 
   if (!Number.isFinite(parsed) || parsed < 0 || parsed > 1) {
-    throw new ValidationError(`Environment variable "${key}" must be a number between 0 and 1.`, "INVALID_ENV");
+    throw new ValidationError(
+      `Environment variable "${key}" must be a number between 0 and 1.`,
+      "INVALID_ENV",
+    );
   }
 
   return parsed;

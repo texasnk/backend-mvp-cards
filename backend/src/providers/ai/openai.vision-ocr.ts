@@ -2,7 +2,7 @@ import { readFile } from "node:fs/promises";
 import type {
   ProcessingFileReference,
   VisionOcrProvider,
-} from "../../modules/processing/processing.service";
+} from "../../services/processing/processing.service";
 import { ExternalServiceError } from "../../shared/errors/app-error";
 import { OpenAiClient } from "./openai.client";
 
@@ -37,10 +37,12 @@ export class OpenAiVisionOcrProvider implements VisionOcrProvider {
     });
 
     if (responseText.trim().length === 0) {
-      throw new ExternalServiceError("OpenAI OCR returned empty output.", "EMPTY_OCR_OUTPUT");
+      throw new ExternalServiceError(
+        "OpenAI OCR returned empty output.",
+        "EMPTY_OCR_OUTPUT",
+      );
     }
 
     return responseText;
   }
 }
-

@@ -1,4 +1,7 @@
-import { ExternalServiceError, TimeoutError } from "../../shared/errors/app-error";
+import {
+  ExternalServiceError,
+  TimeoutError,
+} from "../../shared/errors/app-error";
 
 export interface OpenAiClientOptions {
   apiKey: string;
@@ -41,9 +44,14 @@ export class OpenAiClient {
     }
   }
 
-  private async performRequest(request: OpenAiResponseRequest): Promise<string> {
+  private async performRequest(
+    request: OpenAiResponseRequest,
+  ): Promise<string> {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), this.options.timeoutMs);
+    const timeout = setTimeout(
+      () => controller.abort(),
+      this.options.timeoutMs,
+    );
 
     try {
       const response = await fetch(`${this.baseUrl}/responses`, {
@@ -58,12 +66,12 @@ export class OpenAiClient {
           input: request.input,
           text: request.responseFormat
             ? {
-                format: {
-                  type: "json_schema",
-                  name: request.responseFormat.name,
-                  schema: request.responseFormat.schema,
-                },
-              }
+              format: {
+                type: "json_schema",
+                name: request.responseFormat.name,
+                schema: request.responseFormat.schema,
+              },
+            }
             : undefined,
         }),
         signal: controller.signal,
@@ -96,7 +104,10 @@ export class OpenAiClient {
         throw new TimeoutError("OpenAI request timed out.", "OPENAI_TIMEOUT");
       }
 
-      throw new ExternalServiceError("OpenAI request failed.", "OPENAI_REQUEST_FAILED");
+      throw new ExternalServiceError(
+        "OpenAI request failed.",
+        "OPENAI_REQUEST_FAILED",
+      );
     } finally {
       clearTimeout(timeout);
     }
@@ -146,4 +157,3 @@ function extractOutputText(data: Record<string, unknown>): string | null {
 function isRetriable(error: unknown): boolean {
   return error instanceof TimeoutError;
 }
-

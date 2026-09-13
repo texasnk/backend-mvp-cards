@@ -17,7 +17,10 @@ export interface CreateAppDependencies {
   readinessCheck: ReadinessCheck;
 }
 
-export function createApp(controllers: ApiControllers, dependencies: CreateAppDependencies) {
+export function createApp(
+  controllers: ApiControllers,
+  dependencies: CreateAppDependencies,
+) {
   const app = express();
 
   app.use(requestIdMiddleware);

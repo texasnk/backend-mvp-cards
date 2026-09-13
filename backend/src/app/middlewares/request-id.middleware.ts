@@ -9,10 +9,13 @@ declare module "express-serve-static-core" {
   }
 }
 
-export function requestIdMiddleware(request: Request, response: Response, next: NextFunction): void {
+export function requestIdMiddleware(
+  request: Request,
+  response: Response,
+  next: NextFunction,
+): void {
   const requestId = request.header(REQUEST_ID_HEADER) ?? randomUUID();
   request.requestId = requestId;
   response.setHeader(REQUEST_ID_HEADER, requestId);
   next();
 }
-

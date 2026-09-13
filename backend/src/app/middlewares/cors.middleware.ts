@@ -8,8 +8,14 @@ export function createCorsMiddleware(allowedOrigins: string[]) {
       response.setHeader("Access-Control-Allow-Origin", origin);
     }
 
-    response.setHeader("Access-Control-Allow-Headers", "Content-Type, X-Request-Id");
-    response.setHeader("Access-Control-Allow-Methods", "GET,POST,PATCH,DELETE,OPTIONS");
+    response.setHeader(
+      "Access-Control-Allow-Headers",
+      "Content-Type, X-Request-Id",
+    );
+    response.setHeader(
+      "Access-Control-Allow-Methods",
+      "GET,POST,PATCH,DELETE,OPTIONS",
+    );
 
     if (request.method === "OPTIONS") {
       response.status(204).send();
@@ -19,4 +25,3 @@ export function createCorsMiddleware(allowedOrigins: string[]) {
     next();
   };
 }
-

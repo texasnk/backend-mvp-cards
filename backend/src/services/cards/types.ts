@@ -1,4 +1,7 @@
-export const CARD_TEXT_MIN_LENGTH = 3;
+import { ValidationError } from "../../shared/errors/app-error";
+
+export const CARD_FRONT_MIN_LENGTH = 3;
+export const CARD_BACK_MIN_LENGTH = 1;
 
 export const CARD_SOURCE_TYPES = ["manual", "generated"] as const;
 export type CardSourceType = (typeof CARD_SOURCE_TYPES)[number];
@@ -22,6 +25,20 @@ export interface Card {
   back: string;
   createdAt: Date;
   updatedAt: Date;
+  state: "new" | "learning" | "review" | "relearn";
+  dueAt: Date;
+  learningStep: number;
+  intervalDays: number;
+  easeFactor: number;
+}
+
+export interface UpdateCardScheduleInput {
+  id: string;
+  state: Card["state"];
+  dueAt: Date;
+  learningStep: number;
+  intervalDays: number;
+  easeFactor: number;
 }
 
 export interface CreateCardInput {
@@ -48,6 +65,11 @@ export interface ListCardsFilters {
   pageSize: number;
 }
 
+/** SPEC-ORM-02: Define a persistência de cards gerados usada por outros serviços. */
+export interface IGeneratedCardsService {
+  persistGeneratedCards(cards: Array<{ id: string; studyDomainId: string; front: string; back: string; approach: CardApproach }>): Promise<Card[]>;
+}
+
 export function assertCardContent(front: string, back: string): void {
   assertCardTextField("front", front);
   assertCardTextField("back", back);
@@ -64,8 +86,17 @@ export function buildCreateCardInput(input: CreateCardInput): CreateCardInput {
   };
 }
 
-export function assertCardTextField(field: "front" | "back", value: string): void {
-  if (value.trim().length < CARD_TEXT_MIN_LENGTH) {
-    throw new Error(`Card ${field} must have at least ${CARD_TEXT_MIN_LENGTH} characters.`);
+export function assertCardTextField(
+  field: "front" | "back",
+  value: string,
+): void {
+  const minLength =
+    field === "front" ? CARD_FRONT_MIN_LENGTH : CARD_BACK_MIN_LENGTH;
+
+  if (value.trim().length < minLength) {
+    throw new ValidationError(
+      `Card ${field} must have at least ${minLength} character${minLength === 1 ? "" : "s"}.`,
+      "INVALID_CARD_FIELD",
+    );
   }
 }

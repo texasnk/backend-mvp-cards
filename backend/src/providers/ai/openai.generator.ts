@@ -4,10 +4,10 @@ import type {
   GeneratedStudyMaterial,
   OpenAiProcessingProvider,
   SuggestedDomain,
-} from "../../modules/processing/processing.service";
-import { CARD_APPROACHES } from "../../modules/cards/card.types";
-import type { CardApproach } from "../../modules/cards/card.types";
-import type { StudyDomain } from "../../modules/domains/domain.types";
+} from "../../services/processing/processing.service";
+import { CARD_APPROACHES } from "../../services/cards/types";
+import type { CardApproach } from "../../services/cards/types";
+import type { IStudyDomain } from "../../services/domains/types";
 import { ExternalServiceError } from "../../shared/errors/app-error";
 import { ProcessingPromptBuilder } from "../../modules/processing/prompt-builder";
 import { OpenAiClient } from "./openai.client";
@@ -20,11 +20,14 @@ export class OpenAiGeneratorProvider implements OpenAiProcessingProvider {
 
   async classifyDomain(input: {
     text: string;
-    domains: StudyDomain[];
+    domains: IStudyDomain[];
   }): Promise<DomainClassificationResult> {
     const responseText = await this.client.createResponse({
       instructions: this.promptBuilder.buildClassificationInstructions(),
-      input: this.promptBuilder.buildClassificationInput(input.text, input.domains),
+      input: this.promptBuilder.buildClassificationInput(
+        input.text,
+        input.domains,
+      ),
       responseFormat: {
         type: "json_schema",
         name: "domain_classification",
@@ -62,7 +65,9 @@ export class OpenAiGeneratorProvider implements OpenAiProcessingProvider {
     };
   }
 
-  async suggestDomain(input: { text: string }): Promise<SuggestedDomain | null> {
+  async suggestDomain(input: {
+    text: string;
+  }): Promise<SuggestedDomain | null> {
     const responseText = await this.client.createResponse({
       instructions: this.promptBuilder.buildSuggestionInstructions(),
       input: this.promptBuilder.buildSuggestionInput(input.text),
@@ -104,8 +109,13 @@ export class OpenAiGeneratorProvider implements OpenAiProcessingProvider {
     language: "pt-BR";
   }): Promise<GeneratedStudyMaterial> {
     const responseText = await this.client.createResponse({
-      instructions: this.promptBuilder.buildMaterialInstructions(input.cardsCount),
-      input: this.promptBuilder.buildMaterialInput(input.text, input.cardsCount),
+      instructions: this.promptBuilder.buildMaterialInstructions(
+        input.cardsCount,
+      ),
+      input: this.promptBuilder.buildMaterialInput(
+        input.text,
+        input.cardsCount,
+      ),
       responseFormat: {
         type: "json_schema",
         name: "study_material",
@@ -144,26 +154,28 @@ export class OpenAiGeneratorProvider implements OpenAiProcessingProvider {
 
     return {
       summary: parsed.summary,
-      cards: parsed.cards.map((card: Record<string, unknown>): GeneratedCardDraft => {
-        if (
-          !card ||
-          typeof card !== "object" ||
-          typeof card.front !== "string" ||
-          typeof card.back !== "string" ||
-          !isCardApproach(card.approach)
-        ) {
-          throw new ExternalServiceError(
-            "OpenAI returned an invalid card payload.",
-            "INVALID_OPENAI_CARD",
-          );
-        }
+      cards: parsed.cards.map(
+        (card: Record<string, unknown>): GeneratedCardDraft => {
+          if (
+            !card ||
+            typeof card !== "object" ||
+            typeof card.front !== "string" ||
+            typeof card.back !== "string" ||
+            !isCardApproach(card.approach)
+          ) {
+            throw new ExternalServiceError(
+              "OpenAI returned an invalid card payload.",
+              "INVALID_OPENAI_CARD",
+            );
+          }
 
-        return {
-          front: card.front,
-          back: card.back,
-          approach: card.approach,
-        };
-      }),
+          return {
+            front: card.front,
+            back: card.back,
+            approach: card.approach,
+          };
+        },
+      ),
     } as GeneratedStudyMaterial;
   }
 }
@@ -172,10 +184,15 @@ function parseJson(text: string): any {
   try {
     return JSON.parse(text);
   } catch {
-    throw new ExternalServiceError("OpenAI returned invalid JSON.", "INVALID_OPENAI_JSON");
+    throw new ExternalServiceError(
+      "OpenAI returned invalid JSON.",
+      "INVALID_OPENAI_JSON",
+    );
   }
 }
 
 function isCardApproach(value: unknown): value is CardApproach {
-  return typeof value === "string" && CARD_APPROACHES.includes(value as CardApproach);
+  return (
+    typeof value === "string" && CARD_APPROACHES.includes(value as CardApproach)
+  );
 }

@@ -48,4 +48,3 @@ export interface FailProcessingRequestInput {
   failureReason: string;
   extractedTextChars: number;
 }
-

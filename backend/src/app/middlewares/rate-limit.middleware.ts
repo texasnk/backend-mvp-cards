@@ -29,7 +29,12 @@ export function createRateLimitMiddleware(options: RateLimitOptions) {
     }
 
     if (entry.count >= options.maxRequests) {
-      next(new ValidationError("Rate limit exceeded for processing endpoint.", "RATE_LIMIT_EXCEEDED"));
+      next(
+        new ValidationError(
+          "Rate limit exceeded for processing endpoint.",
+          "RATE_LIMIT_EXCEEDED",
+        ),
+      );
       return;
     }
 
@@ -37,4 +42,3 @@ export function createRateLimitMiddleware(options: RateLimitOptions) {
     next();
   };
 }
-

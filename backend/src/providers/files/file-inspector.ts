@@ -1,8 +1,12 @@
 import { readFile } from "node:fs/promises";
 import imageSize from "image-size";
 import pdfParse from "pdf-parse-new";
-import { ExternalServiceError, TimeoutError, ValidationError } from "../../shared/errors/app-error";
-import type { ProcessingFileReference } from "../../modules/processing/processing.service";
+import {
+  ExternalServiceError,
+  TimeoutError,
+  ValidationError,
+} from "../../shared/errors/app-error";
+import type { ProcessingFileReference } from "../../services/processing/processing.service";
 
 export interface FileInspectorOptions {
   maxPdfPages: number;
@@ -37,7 +41,10 @@ export class FileInspector {
       const pages = result.numpages;
 
       if (!Number.isInteger(pages) || pages < 1) {
-        throw new ValidationError("Could not determine PDF page count.", "INVALID_PDF_METADATA");
+        throw new ValidationError(
+          "Could not determine PDF page count.",
+          "INVALID_PDF_METADATA",
+        );
       }
 
       if (pages > this.options.maxPdfPages) {
@@ -59,7 +66,10 @@ export class FileInspector {
       }
 
       if (isTimeoutError(error)) {
-        throw new TimeoutError("PDF metadata inspection timed out.", "PDF_INFO_TIMEOUT");
+        throw new TimeoutError(
+          "PDF metadata inspection timed out.",
+          "PDF_INFO_TIMEOUT",
+        );
       }
 
       throw new ExternalServiceError(
@@ -74,7 +84,10 @@ export class FileInspector {
     const metadata = imageSize(buffer);
 
     if (!metadata.width || !metadata.height) {
-      throw new ValidationError("Could not determine image dimensions.", "INVALID_IMAGE_METADATA");
+      throw new ValidationError(
+        "Could not determine image dimensions.",
+        "INVALID_IMAGE_METADATA",
+      );
     }
 
     if (
@@ -99,7 +112,10 @@ class PdfInspectionTimeoutError extends Error {
   }
 }
 
-async function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
+async function withTimeout<T>(
+  promise: Promise<T>,
+  timeoutMs: number,
+): Promise<T> {
   let timeoutHandle: NodeJS.Timeout | undefined;
 
   try {

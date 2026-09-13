@@ -1,5 +1,5 @@
 import { ValidationError } from "../../shared/errors/app-error";
-import type { ProcessingInputType } from "./processing.types";
+import type { ProcessingInputType } from "../../services/processing/types";
 
 export interface CreateProcessingBody {
   requestId?: string;
@@ -28,7 +28,10 @@ export function parseCreateProcessingBody(body: unknown): CreateProcessingBody {
 
 function asObject(value: unknown): Record<string, unknown> {
   if (!value || typeof value !== "object") {
-    throw new ValidationError("Invalid request object.", "INVALID_REQUEST_OBJECT");
+    throw new ValidationError(
+      "Invalid request object.",
+      "INVALID_REQUEST_OBJECT",
+    );
   }
 
   return value as Record<string, unknown>;
@@ -55,7 +58,10 @@ function asOptionalUuid(value: unknown, field: string): string | undefined {
   }
 
   if (!UUID_PATTERN.test(parsed)) {
-    throw new ValidationError(`Field "${field}" must be a valid UUID.`, "INVALID_FIELD");
+    throw new ValidationError(
+      `Field "${field}" must be a valid UUID.`,
+      "INVALID_FIELD",
+    );
   }
 
   return parsed;
@@ -81,7 +87,10 @@ function asOptionalInteger(value: unknown, field: string): number | undefined {
   const parsed = Number(value);
 
   if (!Number.isInteger(parsed)) {
-    throw new ValidationError(`Field "${field}" must be an integer.`, "INVALID_FIELD");
+    throw new ValidationError(
+      `Field "${field}" must be an integer.`,
+      "INVALID_FIELD",
+    );
   }
 
   return parsed;

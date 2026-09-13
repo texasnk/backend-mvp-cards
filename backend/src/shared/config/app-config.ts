@@ -13,4 +13,3 @@ export function createDefaultAppConfig(): AppConfig {
     processingRateLimitWindowMs: 60_000,
   };
 }
-

@@ -19,4 +19,3 @@ process.on("SIGTERM", async () => {
   await bootstrap.infrastructure.connectionManager.close();
   process.exit(0);
 });
-

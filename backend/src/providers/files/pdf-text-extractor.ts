@@ -3,15 +3,18 @@ import pdfParse from "pdf-parse-new";
 import type {
   PdfTextExtractor,
   ProcessingFileReference,
-} from "../../modules/processing/processing.service";
-import { ExternalServiceError, TimeoutError } from "../../shared/errors/app-error";
+} from "../../services/processing/processing.service";
+import {
+  ExternalServiceError,
+  TimeoutError,
+} from "../../shared/errors/app-error";
 
 export interface LocalPdfTextExtractorOptions {
   timeoutMs: number;
 }
 
 export class LocalPdfTextExtractor implements PdfTextExtractor {
-  constructor(private readonly options: LocalPdfTextExtractorOptions) { }
+  constructor(private readonly options: LocalPdfTextExtractorOptions) {}
 
   async extractText(file: ProcessingFileReference): Promise<string> {
     try {
@@ -26,7 +29,10 @@ export class LocalPdfTextExtractor implements PdfTextExtractor {
       return extractionResult.text;
     } catch (error: unknown) {
       if (isTimeoutError(error)) {
-        throw new TimeoutError("PDF text extraction timed out.", "PDF_TEXT_EXTRACTION_TIMEOUT");
+        throw new TimeoutError(
+          "PDF text extraction timed out.",
+          "PDF_TEXT_EXTRACTION_TIMEOUT",
+        );
       }
 
       throw new ExternalServiceError(
@@ -47,7 +53,10 @@ class PdfTextExtractionTimeoutError extends Error {
   }
 }
 
-async function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
+async function withTimeout<T>(
+  promise: Promise<T>,
+  timeoutMs: number,
+): Promise<T> {
   let timeoutHandle: NodeJS.Timeout | undefined;
 
   try {

@@ -1,4 +1,4 @@
-import type { TextSanitizer } from "../../modules/processing/processing.service";
+import type { TextSanitizer } from "../../services/processing/processing.service";
 
 const MULTIPLE_WHITESPACE_PATTERN = /\s+/g;
 
@@ -10,4 +10,3 @@ export class DefaultTextSanitizer implements TextSanitizer {
       .trim();
   }
 }
-

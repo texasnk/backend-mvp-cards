@@ -3,7 +3,8 @@ import { normalizeStudyDomainName } from "../../shared/utils/normalization";
 export const STUDY_DOMAIN_NAME_MIN_LENGTH = 3;
 export const STUDY_DOMAIN_NAME_MAX_LENGTH = 40;
 
-export interface StudyDomain {
+/** SPEC-DOM-01: Representa um domínio de estudo persistido. */
+export interface IStudyDomain {
   id: string;
   name: string;
   nameNormalized: string;
@@ -21,12 +22,20 @@ export interface UpdateStudyDomainInput {
   name: string;
 }
 
-export interface ListStudyDomainsFilters {
+/** SPEC-DOM-02: Define os filtros de listagem de domínios. */
+export interface IListStudyDomainsFilters {
   search?: string;
   page: number;
   pageSize: number;
 }
 
+/** SPEC-ORM-02: Define as consultas de domínio usadas por outros serviços. */
+export interface IDomainLookupService {
+  getById(id: string): Promise<IStudyDomain>;
+  list(filters: IListStudyDomainsFilters): Promise<import("../../shared/types/pagination.types").PaginatedResult<IStudyDomain>>;
+}
+
+/** SPEC-DOM-10: Valida o nome informado para um domínio. */
 export function assertStudyDomainName(name: string): void {
   const normalizedInput = name.trim();
 
@@ -40,7 +49,10 @@ export function assertStudyDomainName(name: string): void {
   }
 }
 
-export function buildStudyDomain(input: CreateStudyDomainInput): Omit<StudyDomain, "createdAt" | "updatedAt"> {
+/** SPEC-DOM-11: Normaliza os dados antes da persistência do domínio. */
+export function buildStudyDomain(
+  input: CreateStudyDomainInput,
+): Omit<IStudyDomain, "createdAt" | "updatedAt"> {
   assertStudyDomainName(input.name);
 
   return {
@@ -49,4 +61,3 @@ export function buildStudyDomain(input: CreateStudyDomainInput): Omit<StudyDomai
     nameNormalized: normalizeStudyDomainName(input.name),
   };
 }
-
