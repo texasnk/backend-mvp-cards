@@ -2,6 +2,73 @@
 
 Monorepo do MVP de criação e organização de flashcards. Ele reúne uma API para gestão e geração de cards a partir de texto, imagem ou PDF e uma interface web para consumo dessa API.
 
+## Discovery de documentação e diagrams as code
+
+Este repositório concentra a documentação versionável do sistema Cards MVP, um sistema local para auxiliar estudos com flashcards. O objetivo é permitir a criação e manutenção de domínios e cards e a geração em massa de cards a partir de texto, imagens ou PDFs pesquisáveis com apoio de IA.
+
+### Escopo, nível e limites
+
+- **Escopo:** frontend web, API backend, PostgreSQL, infraestrutura local e integração de IA (OpenAI no estado atual).
+- **Nível estrutural:** C4 Containers; o diagrama mostra responsabilidades de containers e dependências, sem endpoints, classes ou módulos internos.
+- **Jornada comportamental:** processamento de conteúdo até o retorno de resumo e cards, com persistência condicional.
+- **Limite do sistema:** frontend, API e banco pertencem ao Cards MVP; o provedor de IA é externo ao limite.
+- **Responsabilidades:** o frontend conduz a interação; a API valida e orquestra; o PostgreSQL persiste domínios, cards e rastreabilidade mínima.
+- **Ambiente:** exclusivamente local. O Docker Compose atual executa API e PostgreSQL; o frontend é iniciado separadamente.
+
+Não fazem parte do escopo atual autenticação, produção, fila, processamento assíncrono, object storage, algoritmo de revisão espaçada e retenção definida de arquivos. PDFs sem camada de texto utilizável são rejeitados no fluxo documentado.
+
+### Diagrama estrutural — C4 Containers
+
+```mermaid
+C4Container
+Person(user, "Usuário", "Cria, consulta e estuda flashcards.")
+System_Boundary(cards_mvp, "Cards MVP (monorepo local)") {
+  Container(frontend, "Frontend Web", "React, TypeScript, Vite", "Interface web dos fluxos do MVP.")
+  Container_Boundary(docker_compose, "Infraestrutura local — Docker Compose") {
+    Container(api, "API Backend", "Node.js, TypeScript, Express", "CRUD de domínios e cards e orquestração síncrona do processamento.")
+    ContainerDb(postgres, "Banco de Dados", "PostgreSQL 16", "Domínios, cards e rastreabilidade técnica mínima.")
+  }
+}
+System_Ext(ai_provider, "OpenAI (provedor atual)", "Integração atualmente implementada para OCR, classificação, resumo e geração. Multi-provider é uma evolução futura.")
+Rel(user, frontend, "Utiliza", "HTTP")
+Rel(frontend, api, "Consome a API", "HTTP/JSON e multipart/form-data")
+Rel(api, postgres, "Lê e grava dados", "PostgreSQL")
+Rel(api, ai_provider, "Solicita OCR, classificação, resumo e geração", "API OpenAI Responses")
+```
+
+### Diagrama comportamental — geração de cards a partir de conteúdo
+
+```mermaid
+sequenceDiagram
+    actor U as Usuário
+    participant F as Frontend Web
+    participant A as API Backend
+    participant P as Provedor de IA configurável
+    participant DB as PostgreSQL
+
+    U->>F: Seleciona texto, imagem ou PDF e solicita geração
+    F->>A: Envia conteúdo e parâmetros
+    A->>DB: Registra início do processamento
+    alt imagem
+        A->>P: Solicita OCR
+        P-->>A: Retorna texto extraído
+    else texto ou PDF pesquisável
+        A->>A: Sanitiza texto ou extrai texto do PDF
+    end
+    A->>DB: Consulta domínios existentes (quando necessário)
+    A->>P: Solicita classificação/sugestão, resumo e cards
+    P-->>A: Retorna resultado estruturado
+    A->>A: Valida resposta e resolve o domínio
+    alt domínio resolvido
+        A->>DB: Persiste cards associados ao domínio
+    else domínio não resolvido
+        A->>A: Mantém cards apenas na resposta
+    end
+    A->>DB: Finaliza rastreabilidade do processamento
+    A-->>F: Retorna resumo, cards, domínio e/ou sugestão
+    F-->>U: Exibe resultado para revisão
+```
+
 ## Arquitetura
 
 ```text
