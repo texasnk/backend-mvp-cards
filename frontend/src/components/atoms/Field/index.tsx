@@ -1,4 +1,5 @@
 import type { InputHTMLAttributes, SelectHTMLAttributes, TextareaHTMLAttributes } from "react";
+import "./styles.css";
 export function Input(props: InputHTMLAttributes<HTMLInputElement>) {
   return <input className="field" {...props} />;
 }

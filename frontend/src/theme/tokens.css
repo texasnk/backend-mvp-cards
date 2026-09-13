@@ -1,0 +1,90 @@
+:root {
+  /* Cores */
+  --color-background: #111117;
+  --color-surface-header: #15151cdd;
+  --color-surface: #15151c;
+  --color-surface-raised: #191f29;
+  --color-surface-input: #1d1c25;
+  --color-surface-subtle: #1b1a22;
+  --color-surface-muted: #202b3c;
+  --color-surface-hover: #292535;
+  --color-surface-secondary: #302e39;
+  --color-primary: #8ab5ff;
+  --color-success: #73d4a1;
+  --color-danger: #ff9ba7;
+  --color-danger-hover: #ff8a98;
+  --color-danger-strong: #8c3545;
+  --color-text: #e8e6ef;
+  --color-text-strong: #f3effd;
+  --color-text-on-primary: #ffffff;
+  --color-text-secondary: #d0cadc;
+  --color-text-input: #eeecf4;
+  --color-text-info: #d9e7ff;
+  --color-text-muted: #a09cae;
+  --color-text-subtle: #817d8d;
+  --color-border: #292832;
+  --color-border-subtle: #393642;
+  --color-border-input: #373541;
+  --color-border-accent: #38517a;
+  --color-border-hover: #51476a;
+  --color-border-dashed: #514b5d;
+  --color-border-dashed-accent: #526681;
+
+  /* Tipografia */
+  --font-family-base: "Roboto", "Poppins", sans-serif;
+  --font-size-xs: 10px;
+  --font-size-sm: 11px;
+  --font-size-md: 12px;
+  --font-size-base: 13px;
+  --font-size-lg: 14px;
+  --font-size-xl: 15px;
+  --font-size-2xl: 20px;
+  --font-size-3xl: 21px;
+  --font-size-4xl: 25px;
+  --font-size-5xl: 27px;
+  --font-size-6xl: 32px;
+
+  /* Espacamento */
+  --space-0: 0;
+  --space-1: 2px;
+  --space-2: 4px;
+  --space-3: 5px;
+  --space-4: 6px;
+  --space-5: 7px;
+  --space-6: 8px;
+  --space-7: 9px;
+  --space-8: 10px;
+  --space-9: 11px;
+  --space-10: 12px;
+  --space-11: 13px;
+  --space-12: 14px;
+  --space-13: 15px;
+  --space-14: 16px;
+  --space-15: 17px;
+  --space-16: 18px;
+  --space-17: 20px;
+  --space-18: 22px;
+  --space-19: 24px;
+  --space-20: 25px;
+  --space-21: 26px;
+  --space-22: 32px;
+  --space-23: 38px;
+  --space-24: 42px;
+  --space-25: 56px;
+  --space-30: 120px;
+
+  /* Layout e bordas */
+  --border-width: 1px;
+  --radius-sm: 4px;
+  --radius-md: 7px;
+  --radius-lg: 8px;
+  --radius-xl: 10px;
+  --radius-2xl: 12px;
+  --radius-3xl: 14px;
+  --radius-4xl: 16px;
+  --radius-card: 13px;
+  --radius-pill: 20px;
+  --layout-sidebar-width: 280px;
+  --layout-content-max-width: 800px;
+  --breakpoint-mobile: 760px;
+}
