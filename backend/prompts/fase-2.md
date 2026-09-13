@@ -1,22 +1,14 @@
 Atue como Solution Architect sênior especializado em backend, APIs, IA generativa e processamento de documentos.
 
-  
-
 Projete uma arquitetura backend MVP para o sistema descrito.
-
-  
 
 Contexto:
 
 Leia o arquivo prompts/fase-1.md
 
-  
-
 Objetivo:
 
 Gerar arquivo Arquitetura.md dentro de docs/ com as definições de arquitetura simples, modular, segura e evolutiva para MVP. Utilizando express, joi, jest 30, node-ts, typescript e postgres + docker para rodar localmente. Demais necessidade exigem definição.
-
-  
 
 Analise:
 
@@ -40,8 +32,6 @@ Analise:
 
 10. Evolução pós-MVP
 
-  
-
 Restrições:
 
 - Priorizar simplicidade de MVP.
@@ -53,8 +43,6 @@ Restrições:
 - Não inventar regras pedagógicas além das informadas.
 
 - Diferenciar decisão recomendada de alternativa futura.
-
-  
 
 Formato:
 

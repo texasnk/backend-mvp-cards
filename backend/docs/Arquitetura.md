@@ -73,17 +73,17 @@ Express API
 
 ## 4. Componentes principais
 
-| Componente | Responsabilidade | Recomendado no MVP | Alternativa futura |
-|---|---|---|---|
-| API REST | Expor CRUD e processamento | `Express` | `Fastify` se houver necessidade de throughput maior |
-| Camada de validação | Validar payload, query, params e multipart metadata | `Joi` por rota | OpenAPI-first com geração automática |
-| Serviços de aplicação | Orquestrar casos de uso | Classes simples por módulo | CQRS apenas se a complexidade crescer |
-| Repositórios | Isolar acesso ao banco | SQL com query builder ou ORM leve | ORM mais completo se o modelo crescer |
-| Banco | Persistir domínios, cards e trilha mínima de processamento | `PostgreSQL` | Separar leitura/escrita somente com escala real |
-| Extração de PDF textual | Extrair texto nativamente de PDFs pesquisáveis | Biblioteca Node dedicada | Serviço externo especializado |
-| OCR/visão | Ler imagem enviada | OpenAI com entrada de imagem | OCR local especializado |
-| Geração IA | Resumo, cards, classificação e sugestão de domínio | OpenAI via adaptador próprio | Multi-provider com fallback |
-| Observabilidade | Logs, métricas e healthchecks | logger estruturado + métricas Prometheus | tracing distribuído completo |
+| Componente              | Responsabilidade                                           | Recomendado no MVP                       | Alternativa futura                                  |
+| ----------------------- | ---------------------------------------------------------- | ---------------------------------------- | --------------------------------------------------- |
+| API REST                | Expor CRUD e processamento                                 | `Express`                                | `Fastify` se houver necessidade de throughput maior |
+| Camada de validação     | Validar payload, query, params e multipart metadata        | `Joi` por rota                           | OpenAPI-first com geração automática                |
+| Serviços de aplicação   | Orquestrar casos de uso                                    | Classes simples por módulo               | CQRS apenas se a complexidade crescer               |
+| Repositórios            | Isolar acesso ao banco                                     | SQL com query builder ou ORM leve        | ORM mais completo se o modelo crescer               |
+| Banco                   | Persistir domínios, cards e trilha mínima de processamento | `PostgreSQL`                             | Separar leitura/escrita somente com escala real     |
+| Extração de PDF textual | Extrair texto nativamente de PDFs pesquisáveis             | Biblioteca Node dedicada                 | Serviço externo especializado                       |
+| OCR/visão               | Ler imagem enviada                                         | OpenAI com entrada de imagem             | OCR local especializado                             |
+| Geração IA              | Resumo, cards, classificação e sugestão de domínio         | OpenAI via adaptador próprio             | Multi-provider com fallback                         |
+| Observabilidade         | Logs, métricas e healthchecks                              | logger estruturado + métricas Prometheus | tracing distribuído completo                        |
 
 ## 5. Estrutura lógica sugerida
 
@@ -213,39 +213,39 @@ Decisão recomendada:
 
 #### Domains
 
-| Método | Rota | Input sugerido | Output sugerido | Justificativa |
-|---|---|---|---|---|
-| `POST` | `/api/v1/domains` | body com `name` | `id`, `name`, `createdAt`, `updatedAt` | Manter criação explícita e simples para evitar duplicidade semântica no catálogo. |
-| `GET` | `/api/v1/domains` | query com `search`, `page`, `pageSize` | lista paginada de domínios | Paginação evita resposta crescente demais e `search` cobre consulta administrativa básica. |
-| `GET` | `/api/v1/domains/:id` | `id` em path | domínio completo | Leitura direta por identificador mantém contrato previsível. |
-| `PATCH` | `/api/v1/domains/:id` | `id` em path e body com `name` | domínio atualizado | `PATCH` reduz necessidade de payload completo para alteração simples. |
-| `DELETE` | `/api/v1/domains/:id` | `id` em path | `204 No Content` | Remoção sem payload reduz ambiguidade de retorno. |
+| Método   | Rota                  | Input sugerido                         | Output sugerido                        | Justificativa                                                                              |
+| -------- | --------------------- | -------------------------------------- | -------------------------------------- | ------------------------------------------------------------------------------------------ |
+| `POST`   | `/api/v1/domains`     | body com `name`                        | `id`, `name`, `createdAt`, `updatedAt` | Manter criação explícita e simples para evitar duplicidade semântica no catálogo.          |
+| `GET`    | `/api/v1/domains`     | query com `search`, `page`, `pageSize` | lista paginada de domínios             | Paginação evita resposta crescente demais e `search` cobre consulta administrativa básica. |
+| `GET`    | `/api/v1/domains/:id` | `id` em path                           | domínio completo                       | Leitura direta por identificador mantém contrato previsível.                               |
+| `PATCH`  | `/api/v1/domains/:id` | `id` em path e body com `name`         | domínio atualizado                     | `PATCH` reduz necessidade de payload completo para alteração simples.                      |
+| `DELETE` | `/api/v1/domains/:id` | `id` em path                           | `204 No Content`                       | Remoção sem payload reduz ambiguidade de retorno.                                          |
 
 #### Cards
 
-| Método | Rota | Input sugerido | Output sugerido | Justificativa |
-|---|---|---|---|---|
-| `POST` | `/api/v1/cards` | body com `studyDomainId`, `front`, `back`, `approach` opcional | card criado | Mantém CRUD manual separado do processamento automático e facilita governança do conteúdo. |
-| `GET` | `/api/v1/cards` | query com `studyDomainId`, `sourceType`, `approach`, `page`, `pageSize` | lista paginada de cards | Esses filtros são os mais úteis no MVP por cobrirem domínio, origem e tipo pedagógico sem complexidade de busca textual. |
-| `GET` | `/api/v1/cards/:id` | `id` em path | card completo | Consulta unitária é necessária para edição e auditoria operacional. |
-| `PATCH` | `/api/v1/cards/:id` | `id` em path e body parcial com `front`, `back`, `approach` | card atualizado | `PATCH` suporta manutenção incremental de cards sem reenviar todo o recurso. |
-| `DELETE` | `/api/v1/cards/:id` | `id` em path | `204 No Content` | Exclusão única cobre cards manuais e gerados com o mesmo contrato. |
+| Método   | Rota                | Input sugerido                                                          | Output sugerido         | Justificativa                                                                                                            |
+| -------- | ------------------- | ----------------------------------------------------------------------- | ----------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| `POST`   | `/api/v1/cards`     | body com `studyDomainId`, `front`, `back`, `approach` opcional          | card criado             | Mantém CRUD manual separado do processamento automático e facilita governança do conteúdo.                               |
+| `GET`    | `/api/v1/cards`     | query com `studyDomainId`, `sourceType`, `approach`, `page`, `pageSize` | lista paginada de cards | Esses filtros são os mais úteis no MVP por cobrirem domínio, origem e tipo pedagógico sem complexidade de busca textual. |
+| `GET`    | `/api/v1/cards/:id` | `id` em path                                                            | card completo           | Consulta unitária é necessária para edição e auditoria operacional.                                                      |
+| `PATCH`  | `/api/v1/cards/:id` | `id` em path e body parcial com `front`, `back`, `approach`             | card atualizado         | `PATCH` suporta manutenção incremental de cards sem reenviar todo o recurso.                                             |
+| `DELETE` | `/api/v1/cards/:id` | `id` em path                                                            | `204 No Content`        | Exclusão única cobre cards manuais e gerados com o mesmo contrato.                                                       |
 
 #### Processing and operations
 
-| Método | Rota | Input sugerido | Output sugerido | Justificativa |
-|---|---|---|---|---|
-| `POST` | `/api/v1/processings` | body JSON com `text`, `domainId`, `cardsCount` ou `multipart/form-data` com `file`, `domainId`, `cardsCount` | `requestId`, `inputType`, `summary`, `domain`, `suggestedDomain`, `cards` | Unificar o caso de uso principal em um endpoint reduz coordenação no cliente e preserva rastreabilidade. |
-| `GET` | `/api/v1/health/live` | sem input | status simples | Liveness separado evita acoplamento com dependências externas. |
-| `GET` | `/api/v1/health/ready` | sem input | status + readiness mínima | Readiness permite verificar banco e configuração essencial antes de receber tráfego. |
-| `GET` | `/api/v1/metrics` | sem input | métricas Prometheus | Exposição dedicada simplifica scraping operacional. |
+| Método | Rota                   | Input sugerido                                                                                               | Output sugerido                                                           | Justificativa                                                                                            |
+| ------ | ---------------------- | ------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| `POST` | `/api/v1/processings`  | body JSON com `text`, `domainId`, `cardsCount` ou `multipart/form-data` com `file`, `domainId`, `cardsCount` | `requestId`, `inputType`, `summary`, `domain`, `suggestedDomain`, `cards` | Unificar o caso de uso principal em um endpoint reduz coordenação no cliente e preserva rastreabilidade. |
+| `GET`  | `/api/v1/health/live`  | sem input                                                                                                    | status simples                                                            | Liveness separado evita acoplamento com dependências externas.                                           |
+| `GET`  | `/api/v1/health/ready` | sem input                                                                                                    | status + readiness mínima                                                 | Readiness permite verificar banco e configuração essencial antes de receber tráfego.                     |
+| `GET`  | `/api/v1/metrics`      | sem input                                                                                                    | métricas Prometheus                                                       | Exposição dedicada simplifica scraping operacional.                                                      |
 
 ### 7.3 Filtros recomendados
 
-| Rota | Filtros |
-|---|---|
-| `/api/v1/domains` | `search`, `page`, `pageSize` |
-| `/api/v1/cards` | `studyDomainId`, `sourceType`, `approach`, `page`, `pageSize` |
+| Rota              | Filtros                                                       |
+| ----------------- | ------------------------------------------------------------- |
+| `/api/v1/domains` | `search`, `page`, `pageSize`                                  |
+| `/api/v1/cards`   | `studyDomainId`, `sourceType`, `approach`, `page`, `pageSize` |
 
 Motivos dos filtros sugeridos:
 
@@ -335,21 +335,21 @@ Persistir cards em estado `pending_domain_review` caso o produto passe a exigir 
 
 ### 8.1 Entidades principais
 
-| Entidade | Finalidade |
-|---|---|
-| `study_domains` | Catálogo de domínios de estudo |
-| `cards` | Cards manuais e gerados |
+| Entidade              | Finalidade                                              |
+| --------------------- | ------------------------------------------------------- |
+| `study_domains`       | Catálogo de domínios de estudo                          |
+| `cards`               | Cards manuais e gerados                                 |
 | `processing_requests` | Auditoria técnica mínima das operações de processamento |
 
 ### 8.2 Tabela `study_domains`
 
-| Campo | Tipo | Observação |
-|---|---|---|
-| `id` | `uuid` | PK |
-| `name` | `varchar(40)` | Nome exibido |
+| Campo             | Tipo          | Observação                    |
+| ----------------- | ------------- | ----------------------------- |
+| `id`              | `uuid`        | PK                            |
+| `name`            | `varchar(40)` | Nome exibido                  |
 | `name_normalized` | `varchar(40)` | Lowercase/trim para unicidade |
-| `created_at` | `timestamptz` | |
-| `updated_at` | `timestamptz` | |
+| `created_at`      | `timestamptz` |                               |
+| `updated_at`      | `timestamptz` |                               |
 
 Restrições:
 
@@ -358,16 +358,16 @@ Restrições:
 
 ### 8.3 Tabela `cards`
 
-| Campo | Tipo | Observação |
-|---|---|---|
-| `id` | `uuid` | PK |
-| `study_domain_id` | `uuid` | FK para `study_domains` |
-| `source_type` | `varchar(20)` | `manual` ou `generated` |
-| `approach` | `varchar(30)` | enum lógico |
-| `front` | `text` | mínimo 3 chars |
-| `back` | `text` | mínimo 3 chars |
-| `created_at` | `timestamptz` | |
-| `updated_at` | `timestamptz` | |
+| Campo             | Tipo          | Observação              |
+| ----------------- | ------------- | ----------------------- |
+| `id`              | `uuid`        | PK                      |
+| `study_domain_id` | `uuid`        | FK para `study_domains` |
+| `source_type`     | `varchar(20)` | `manual` ou `generated` |
+| `approach`        | `varchar(30)` | enum lógico             |
+| `front`           | `text`        | mínimo 3 chars          |
+| `back`            | `text`        | mínimo 3 chars          |
+| `created_at`      | `timestamptz` |                         |
+| `updated_at`      | `timestamptz` |                         |
 
 Enum lógico de `approach`:
 
@@ -380,22 +380,22 @@ Enum lógico de `approach`:
 
 ### 8.4 Tabela `processing_requests`
 
-| Campo | Tipo | Observação |
-|---|---|---|
-| `id` | `uuid` | PK e `requestId` externo |
-| `input_type` | `varchar(20)` | `text`, `image`, `pdf` |
-| `provided_domain_id` | `uuid` | Nullable |
-| `resolved_domain_id` | `uuid` | Nullable |
-| `status` | `varchar(30)` | `started`, `succeeded`, `failed`, `succeeded_without_persistence` |
-| `cards_requested` | `smallint` | |
-| `cards_created` | `smallint` | Quantidade gerada pela IA |
-| `cards_persisted` | `smallint` | Quantidade efetivamente persistida |
-| `suggested_domain_name` | `varchar(40)` | Nullable |
-| `extracted_text_chars` | `integer` | |
-| `failure_code` | `varchar(50)` | Nullable |
-| `failure_reason` | `text` | Sanitizada, sem dados sensíveis |
-| `started_at` | `timestamptz` | |
-| `finished_at` | `timestamptz` | Nullable |
+| Campo                   | Tipo          | Observação                                                        |
+| ----------------------- | ------------- | ----------------------------------------------------------------- |
+| `id`                    | `uuid`        | PK e `requestId` externo                                          |
+| `input_type`            | `varchar(20)` | `text`, `image`, `pdf`                                            |
+| `provided_domain_id`    | `uuid`        | Nullable                                                          |
+| `resolved_domain_id`    | `uuid`        | Nullable                                                          |
+| `status`                | `varchar(30)` | `started`, `succeeded`, `failed`, `succeeded_without_persistence` |
+| `cards_requested`       | `smallint`    |                                                                   |
+| `cards_created`         | `smallint`    | Quantidade gerada pela IA                                         |
+| `cards_persisted`       | `smallint`    | Quantidade efetivamente persistida                                |
+| `suggested_domain_name` | `varchar(40)` | Nullable                                                          |
+| `extracted_text_chars`  | `integer`     |                                                                   |
+| `failure_code`          | `varchar(50)` | Nullable                                                          |
+| `failure_reason`        | `text`        | Sanitizada, sem dados sensíveis                                   |
+| `started_at`            | `timestamptz` |                                                                   |
+| `finished_at`           | `timestamptz` | Nullable                                                          |
 
 ### Decisão recomendada
 
@@ -516,12 +516,12 @@ Motivos:
 
 ### 10.2 Pipeline recomendado
 
-| Entrada | Etapa 1 | Etapa 2 | Saída |
-|---|---|---|---|
-| Texto puro | validação de tamanho | sanitização | texto |
-| PDF textual | extração local | validação de conteúdo | texto |
-| PDF sem texto utilizável | rejeição controlada | resposta de erro | sem texto |
-| Imagem | normalização de resolução | OCR via OpenAI | texto |
+| Entrada                  | Etapa 1                   | Etapa 2               | Saída     |
+| ------------------------ | ------------------------- | --------------------- | --------- |
+| Texto puro               | validação de tamanho      | sanitização           | texto     |
+| PDF textual              | extração local            | validação de conteúdo | texto     |
+| PDF sem texto utilizável | rejeição controlada       | resposta de erro      | sem texto |
+| Imagem                   | normalização de resolução | OCR via OpenAI        | texto     |
 
 ### 10.3 Regras operacionais
 
@@ -535,12 +535,12 @@ Motivos:
 
 ### 10.4 Dependências técnicas recomendadas
 
-| Necessidade | Recomendado no MVP |
-|---|---|
-| Upload multipart | `multer` |
-| Detecção MIME | `file-type` ou validação equivalente |
-| Extração de PDF textual | biblioteca Node dedicada para texto |
-| Compressão/redimensionamento | `sharp` |
+| Necessidade                  | Recomendado no MVP                   |
+| ---------------------------- | ------------------------------------ |
+| Upload multipart             | `multer`                             |
+| Detecção MIME                | `file-type` ou validação equivalente |
+| Extração de PDF textual      | biblioteca Node dedicada para texto  |
+| Compressão/redimensionamento | `sharp`                              |
 
 ### Alternativa futura
 
@@ -552,31 +552,31 @@ Esta seção combina controles aplicáveis do OWASP Top 10:2025 para aplicaçõe
 
 ### 11.1 Controles recomendados
 
-| Risco | Aplicação no MVP | Controle recomendado |
-|---|---|---|
-| Broken Access Control | Exposição indevida de recursos por ID | Preparar camada de autorização por recurso, mesmo sem autenticação do produto no MVP |
-| Security Misconfiguration | Headers, CORS, debug, containers | `helmet`, CORS explícito, sem stack trace externo, imagens mínimas |
-| Software Supply Chain Failures | Dependências Node e utilitários de OCR/PDF | lockfile, scanner de vulnerabilidade, versões fixadas |
-| Cryptographic Failures | Segredos e tráfego | TLS fora do container, `.env` fora do git, rotação de chave |
-| Injection | SQL, prompt injection indireta, logs | queries parametrizadas, sanitização, não interpolar SQL |
-| Insecure Design | Fluxo síncrono e IA sem schema | validação forte, limite de volume, schema estrito |
-| Authentication Failures | Caso a API seja exposta externamente | não expor sem gateway; alternativa futura com API key/JWT |
-| Software/Data Integrity Failures | Respostas da IA e arquivos | validação por schema, verificação MIME, checksum opcional |
-| Logging and Alerting Failures | Auditoria insuficiente | logs estruturados, correlação por request id, falhas externas registradas |
-| Mishandling of Exceptional Conditions | timeouts, falhas parciais | erro padronizado, rollback transacional, cleanup de arquivos |
+| Risco                                 | Aplicação no MVP                           | Controle recomendado                                                                 |
+| ------------------------------------- | ------------------------------------------ | ------------------------------------------------------------------------------------ |
+| Broken Access Control                 | Exposição indevida de recursos por ID      | Preparar camada de autorização por recurso, mesmo sem autenticação do produto no MVP |
+| Security Misconfiguration             | Headers, CORS, debug, containers           | `helmet`, CORS explícito, sem stack trace externo, imagens mínimas                   |
+| Software Supply Chain Failures        | Dependências Node e utilitários de OCR/PDF | lockfile, scanner de vulnerabilidade, versões fixadas                                |
+| Cryptographic Failures                | Segredos e tráfego                         | TLS fora do container, `.env` fora do git, rotação de chave                          |
+| Injection                             | SQL, prompt injection indireta, logs       | queries parametrizadas, sanitização, não interpolar SQL                              |
+| Insecure Design                       | Fluxo síncrono e IA sem schema             | validação forte, limite de volume, schema estrito                                    |
+| Authentication Failures               | Caso a API seja exposta externamente       | não expor sem gateway; alternativa futura com API key/JWT                            |
+| Software/Data Integrity Failures      | Respostas da IA e arquivos                 | validação por schema, verificação MIME, checksum opcional                            |
+| Logging and Alerting Failures         | Auditoria insuficiente                     | logs estruturados, correlação por request id, falhas externas registradas            |
+| Mishandling of Exceptional Conditions | timeouts, falhas parciais                  | erro padronizado, rollback transacional, cleanup de arquivos                         |
 
 ### 11.2 Controles específicos de API
 
-| Risco API | Controle recomendado |
-|---|---|
-| API1 BOLA | nunca confiar apenas no `id`; validar existência e escopo do recurso |
-| API3 Broken Object Property Level Authorization | whitelist de campos atualizáveis no `PATCH` |
-| API4 Unrestricted Resource Consumption | rate limit, limite de tamanho, limite de cards, timeout |
-| API6 Sensitive Business Flows | proteger endpoint de processamento contra abuso e automação |
-| API7 SSRF | não aceitar URLs externas do usuário para download de arquivos |
-| API8 Security Misconfiguration | desabilitar endpoints de debug e mensagens verbosas |
-| API9 Inventory Management | versionar API em `/v1` e manter documentação mínima |
-| API10 Unsafe Consumption of APIs | tratar OpenAI como entrada não confiável; validar sempre |
+| Risco API                                       | Controle recomendado                                                 |
+| ----------------------------------------------- | -------------------------------------------------------------------- |
+| API1 BOLA                                       | nunca confiar apenas no `id`; validar existência e escopo do recurso |
+| API3 Broken Object Property Level Authorization | whitelist de campos atualizáveis no `PATCH`                          |
+| API4 Unrestricted Resource Consumption          | rate limit, limite de tamanho, limite de cards, timeout              |
+| API6 Sensitive Business Flows                   | proteger endpoint de processamento contra abuso e automação          |
+| API7 SSRF                                       | não aceitar URLs externas do usuário para download de arquivos       |
+| API8 Security Misconfiguration                  | desabilitar endpoints de debug e mensagens verbosas                  |
+| API9 Inventory Management                       | versionar API em `/v1` e manter documentação mínima                  |
+| API10 Unsafe Consumption of APIs                | tratar OpenAI como entrada não confiável; validar sempre             |
 
 ### 11.3 Medidas concretas
 
@@ -620,15 +620,15 @@ Esta seção combina controles aplicáveis do OWASP Top 10:2025 para aplicaçõe
 
 ### 12.2 Métricas
 
-| Métrica | Uso |
-|---|---|
-| `http_requests_total` | volume por rota |
-| `http_request_duration_ms` | latência |
+| Métrica                     | Uso                      |
+| --------------------------- | ------------------------ |
+| `http_requests_total`       | volume por rota          |
+| `http_request_duration_ms`  | latência                 |
 | `processing_requests_total` | volume de processamentos |
-| `processing_failures_total` | taxa de falha |
-| `openai_calls_total` | consumo por integração |
-| `openai_call_duration_ms` | latência externa |
-| `cards_generated_total` | volume de saída |
+| `processing_failures_total` | taxa de falha            |
+| `openai_calls_total`        | consumo por integração   |
+| `openai_call_duration_ms`   | latência externa         |
+| `cards_generated_total`     | volume de saída          |
 
 ### 12.3 Health checks
 
@@ -641,22 +641,22 @@ Adicionar tracing distribuído com OpenTelemetry quando houver múltiplos servi�
 
 ## 13. Stack técnica recomendada
 
-| Camada | Recomendado no MVP |
-|---|---|
-| Runtime | `Node.js` LTS |
-| Linguagem | `TypeScript` |
-| Web | `Express` |
-| Validação | `Joi` |
-| Testes | `Jest 30` |
-| Execução TS local | `ts-node` |
-| Integração Jest + TS | `ts-jest` |
-| Banco | `PostgreSQL` |
-| Containerização | `Docker` + `docker compose` |
-| Upload | `multer` |
-| Logs | `pino` ou equivalente |
-| Config | `dotenv` + módulo de config tipado |
-| Métricas | `prom-client` |
-| HTTP client | `undici` ou SDK oficial |
+| Camada               | Recomendado no MVP                 |
+| -------------------- | ---------------------------------- |
+| Runtime              | `Node.js` LTS                      |
+| Linguagem            | `TypeScript`                       |
+| Web                  | `Express`                          |
+| Validação            | `Joi`                              |
+| Testes               | `Jest 30`                          |
+| Execução TS local    | `ts-node`                          |
+| Integração Jest + TS | `ts-jest`                          |
+| Banco                | `PostgreSQL`                       |
+| Containerização      | `Docker` + `docker compose`        |
+| Upload               | `multer`                           |
+| Logs                 | `pino` ou equivalente              |
+| Config               | `dotenv` + módulo de config tipado |
+| Métricas             | `prom-client`                      |
+| HTTP client          | `undici` ou SDK oficial            |
 
 ### Observação
 
@@ -695,40 +695,40 @@ Dependências de sistema no container da API:
 
 ### Variáveis de ambiente mínimas
 
-| Variável | Finalidade |
-|---|---|
-| `PORT` | porta da API |
-| `DATABASE_URL` | conexão Postgres |
-| `OPENAI_API_KEY` | autenticação OpenAI |
-| `OPENAI_MODEL_TEXT` | modelo para resumo/cards/classificação |
-| `OPENAI_MODEL_VISION` | modelo para OCR/visão |
-| `MAX_FILE_SIZE_MB` | padrão 10 |
-| `MAX_TEXT_CHARS` | padrão 10000 |
-| `MAX_CARDS_PER_REQUEST` | padrão 10 |
-| `REQUEST_TIMEOUT_MS` | padrão 30000 |
-| `ALLOWED_CORS_ORIGINS` | CORS |
-| `LOG_LEVEL` | logs |
+| Variável                | Finalidade                             |
+| ----------------------- | -------------------------------------- |
+| `PORT`                  | porta da API                           |
+| `DATABASE_URL`          | conexão Postgres                       |
+| `OPENAI_API_KEY`        | autenticação OpenAI                    |
+| `OPENAI_MODEL_TEXT`     | modelo para resumo/cards/classificação |
+| `OPENAI_MODEL_VISION`   | modelo para OCR/visão                  |
+| `MAX_FILE_SIZE_MB`      | padrão 10                              |
+| `MAX_TEXT_CHARS`        | padrão 10000                           |
+| `MAX_CARDS_PER_REQUEST` | padrão 10                              |
+| `REQUEST_TIMEOUT_MS`    | padrão 30000                           |
+| `ALLOWED_CORS_ORIGINS`  | CORS                                   |
+| `LOG_LEVEL`             | logs                                   |
 
 ### Artefatos operacionais sugeridos
 
-| Artefato | Conteúdo mínimo | Justificativa |
-|---|---|---|
-| `.env.example` | variáveis obrigatórias sem segredos reais | Acelera onboarding local e reduz erro de configuração entre ambientes. |
-| `.gitignore` | `node_modules`, `.env`, logs, cobertura, temporários e artefatos de build | Evita vazamento de segredo e ruído de versionamento. |
-| `README.md` | contexto do projeto, instruções de uso, setup local, decisões principais do MVP e lista das bibliotecas utilizadas com a função de cada uma no projeto | Reduz dependência de conhecimento tácito, acelera onboarding técnico e deixa explícito o papel de cada dependência adotada no MVP. |
+| Artefato       | Conteúdo mínimo                                                                                                                                        | Justificativa                                                                                                                      |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `.env.example` | variáveis obrigatórias sem segredos reais                                                                                                              | Acelera onboarding local e reduz erro de configuração entre ambientes.                                                             |
+| `.gitignore`   | `node_modules`, `.env`, logs, cobertura, temporários e artefatos de build                                                                              | Evita vazamento de segredo e ruído de versionamento.                                                                               |
+| `README.md`    | contexto do projeto, instruções de uso, setup local, decisões principais do MVP e lista das bibliotecas utilizadas com a função de cada uma no projeto | Reduz dependência de conhecimento tácito, acelera onboarding técnico e deixa explícito o papel de cada dependência adotada no MVP. |
 
 ## 16. Riscos técnicos
 
-| Risco | Impacto | Mitigação MVP |
-|---|---|---|
-| OCR ruim em imagem de baixa qualidade | cards incorretos | limite de resolução, normalização e mensagem clara de falha |
-| PDF sem texto utilizável | rejeição do conteúdo | comunicar limitação e exigir PDF com camada de texto ou imagem separada |
-| Resposta inconsistente da IA | persistência inválida | structured outputs + validação Joi/schema |
-| Custo variável da OpenAI | impacto operacional | limite de tamanho, limite de cards, logs de consumo |
-| Ambiguidade na classificação de domínio | cards no domínio errado | pedir classificação apenas entre domínios existentes e aplicar critério mínimo de aderência |
-| Falha parcial entre IA e banco | inconsistência | transação e persistência apenas após validação final |
-| Dependência de binário de conversão PDF | fragilidade em ambiente | fixar imagem Docker e validar startup |
-| Ausência de autenticação no produto | risco se exposto na internet | uso apenas em rede confiável no MVP ou proteção por gateway externo |
+| Risco                                   | Impacto                      | Mitigação MVP                                                                               |
+| --------------------------------------- | ---------------------------- | ------------------------------------------------------------------------------------------- |
+| OCR ruim em imagem de baixa qualidade   | cards incorretos             | limite de resolução, normalização e mensagem clara de falha                                 |
+| PDF sem texto utilizável                | rejeição do conteúdo         | comunicar limitação e exigir PDF com camada de texto ou imagem separada                     |
+| Resposta inconsistente da IA            | persistência inválida        | structured outputs + validação Joi/schema                                                   |
+| Custo variável da OpenAI                | impacto operacional          | limite de tamanho, limite de cards, logs de consumo                                         |
+| Ambiguidade na classificação de domínio | cards no domínio errado      | pedir classificação apenas entre domínios existentes e aplicar critério mínimo de aderência |
+| Falha parcial entre IA e banco          | inconsistência               | transação e persistência apenas após validação final                                        |
+| Dependência de binário de conversão PDF | fragilidade em ambiente      | fixar imagem Docker e validar startup                                                       |
+| Ausência de autenticação no produto     | risco se exposto na internet | uso apenas em rede confiável no MVP ou proteção por gateway externo                         |
 
 ## 17. Evolução pós-MVP
 

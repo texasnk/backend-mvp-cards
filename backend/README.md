@@ -1,10 +1,10 @@
 # Backend MVP Cards
 
- [![CI](https://github.com/texasnk/backend-mvp-cards/actions/workflows/ci.yml/badge.svg)](https://github.com/texasnk/backend-mvp-cards/actions/workflows/ci.yml)
-  ![Node.js](https://img.shields.io/badge/node-22.x-339933?logo=node.js&logoColor=white)
-  ![TypeScript](https://img.shields.io/badge/typescript-5.x-3178C6?logo=typescript&logoColor=white)
-  [![License](https://img.shields.io/badge/license-MIT-green)](./LICENSE)
-  
+[![CI](https://github.com/texasnk/backend-mvp-cards/actions/workflows/ci.yml/badge.svg)](https://github.com/texasnk/backend-mvp-cards/actions/workflows/ci.yml)
+![Node.js](https://img.shields.io/badge/node-22.x-339933?logo=node.js&logoColor=white)
+![TypeScript](https://img.shields.io/badge/typescript-5.x-3178C6?logo=typescript&logoColor=white)
+[![License](https://img.shields.io/badge/license-MIT-green)](./LICENSE)
+
 ## Descrição
 
 API backend em TypeScript para um MVP de geração e organização de material de estudo.
@@ -91,27 +91,27 @@ O projeto foi estruturado como um monólito modular com foco em:
 
 Use `.env.example` como base.
 
-| Variável | Obrigatória | Descrição |
-|---|---|---|
-| `PORT` | não | Porta HTTP da API |
-| `DATABASE_URL` | sim | String de conexão com PostgreSQL |
-| `OPENAI_API_KEY` | sim | Chave da OpenAI |
-| `OPENAI_MODEL_TEXT` | sim | Modelo para classificação, sugestão e geração |
-| `OPENAI_MODEL_VISION` | sim | Modelo para OCR multimodal |
-| `MAX_FILE_SIZE_MB` | não | Limite de upload |
-| `MAX_TEXT_CHARS` | não | Limite de texto processável |
-| `MAX_CARDS_PER_REQUEST` | não | Máximo de cards gerados |
-| `DEFAULT_CARDS_PER_REQUEST` | não | Quantidade padrão de cards |
-| `REQUEST_TIMEOUT_MS` | não | Timeout dos adaptadores externos |
-| `ALLOWED_CORS_ORIGINS` | não | Lista separada por vírgula |
-| `LOG_LEVEL` | não | Nível de log |
-| `DOMAIN_MATCH_THRESHOLD` | não | Limiar de aderência do domínio classificado |
-| `PROCESSING_RATE_LIMIT_MAX_REQUESTS` | não | Limite de requisições de processamento |
-| `PROCESSING_RATE_LIMIT_WINDOW_MS` | não | Janela do rate limit |
-| `MAX_PDF_PAGES` | não | Limite de páginas por PDF |
-| `MAX_IMAGE_WIDTH` | não | Largura máxima de imagem |
-| `MAX_IMAGE_HEIGHT` | não | Altura máxima de imagem |
-| `BODY_LIMIT` | não | Limite do body JSON |
+| Variável                             | Obrigatória | Descrição                                     |
+| ------------------------------------ | ----------- | --------------------------------------------- |
+| `PORT`                               | não         | Porta HTTP da API                             |
+| `DATABASE_URL`                       | sim         | String de conexão com PostgreSQL              |
+| `OPENAI_API_KEY`                     | sim         | Chave da OpenAI                               |
+| `OPENAI_MODEL_TEXT`                  | sim         | Modelo para classificação, sugestão e geração |
+| `OPENAI_MODEL_VISION`                | sim         | Modelo para OCR multimodal                    |
+| `MAX_FILE_SIZE_MB`                   | não         | Limite de upload                              |
+| `MAX_TEXT_CHARS`                     | não         | Limite de texto processável                   |
+| `MAX_CARDS_PER_REQUEST`              | não         | Máximo de cards gerados                       |
+| `DEFAULT_CARDS_PER_REQUEST`          | não         | Quantidade padrão de cards                    |
+| `REQUEST_TIMEOUT_MS`                 | não         | Timeout dos adaptadores externos              |
+| `ALLOWED_CORS_ORIGINS`               | não         | Lista separada por vírgula                    |
+| `LOG_LEVEL`                          | não         | Nível de log                                  |
+| `DOMAIN_MATCH_THRESHOLD`             | não         | Limiar de aderência do domínio classificado   |
+| `PROCESSING_RATE_LIMIT_MAX_REQUESTS` | não         | Limite de requisições de processamento        |
+| `PROCESSING_RATE_LIMIT_WINDOW_MS`    | não         | Janela do rate limit                          |
+| `MAX_PDF_PAGES`                      | não         | Limite de páginas por PDF                     |
+| `MAX_IMAGE_WIDTH`                    | não         | Largura máxima de imagem                      |
+| `MAX_IMAGE_HEIGHT`                   | não         | Altura máxima de imagem                       |
+| `BODY_LIMIT`                         | não         | Limite do body JSON                           |
 
 ### Passos
 
@@ -167,22 +167,22 @@ npm run db:migrate
 
 ### Endpoints principais
 
-| Método | Rota | Objetivo |
-|---|---|---|
-| `POST` | `/api/v1/domains` | criar domínio |
-| `GET` | `/api/v1/domains` | listar domínios |
-| `GET` | `/api/v1/domains/:id` | consultar domínio |
-| `PATCH` | `/api/v1/domains/:id` | atualizar domínio |
-| `DELETE` | `/api/v1/domains/:id` | remover domínio |
-| `POST` | `/api/v1/cards` | criar card manual |
-| `GET` | `/api/v1/cards` | listar cards |
-| `GET` | `/api/v1/cards/:id` | consultar card |
-| `PATCH` | `/api/v1/cards/:id` | atualizar card |
-| `DELETE` | `/api/v1/cards/:id` | remover card |
-| `POST` | `/api/v1/processings` | processar conteúdo |
-| `GET` | `/api/v1/health/live` | liveness |
-| `GET` | `/api/v1/health/ready` | readiness |
-| `GET` | `/api/v1/metrics` | métricas HTTP |
+| Método   | Rota                   | Objetivo           |
+| -------- | ---------------------- | ------------------ |
+| `POST`   | `/api/v1/domains`      | criar domínio      |
+| `GET`    | `/api/v1/domains`      | listar domínios    |
+| `GET`    | `/api/v1/domains/:id`  | consultar domínio  |
+| `PATCH`  | `/api/v1/domains/:id`  | atualizar domínio  |
+| `DELETE` | `/api/v1/domains/:id`  | remover domínio    |
+| `POST`   | `/api/v1/cards`        | criar card manual  |
+| `GET`    | `/api/v1/cards`        | listar cards       |
+| `GET`    | `/api/v1/cards/:id`    | consultar card     |
+| `PATCH`  | `/api/v1/cards/:id`    | atualizar card     |
+| `DELETE` | `/api/v1/cards/:id`    | remover card       |
+| `POST`   | `/api/v1/processings`  | processar conteúdo |
+| `GET`    | `/api/v1/health/live`  | liveness           |
+| `GET`    | `/api/v1/health/ready` | readiness          |
+| `GET`    | `/api/v1/metrics`      | métricas HTTP      |
 
 ### Contratos esperados
 

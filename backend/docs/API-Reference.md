@@ -1,5 +1,19 @@
 # API Reference
 
+## Importação e revisão (SPEC-REVISAO-E-IMPORTACAO)
+
+### `POST /api/v1/cards/import`
+
+Recebe `{ "studyDomainId": "uuid", "text": "Pergunta;Resposta\nOutra pergunta\tOutra resposta" }` e cria todos os cards. Cada linha não vazia precisa ter exatamente um `;` ou uma tabulação; caso contrário retorna `400` e não cria nenhum card.
+
+### `GET /api/v1/cards/:id/review-options`
+
+Retorna as previsões SM-2 para `again`, `hard`, `good` e `easy`, sem alterar o card.
+
+### `POST /api/v1/cards/:id/reviews`
+
+Recebe `{ "rating": "again|hard|good|easy" }`. Registra a resposta e retorna o estado anterior e a nova agenda. O card passa pelos estados `new`, `learning`, `review` e `relearn`.
+
 Referência dos endpoints disponíveis no MVP, baseada no código atual e nas regras registradas em [USs.md](USs.md) e [Arquitetura.md](Arquitetura.md).
 
 ## Convenções gerais
