@@ -1,16 +1,20 @@
-import { AppHeader } from "../components/organisms/AppHeader";
+import { useState } from "react";
+import { DomainPanel, type WorkspaceMode } from "../components/organisms/DomainPanel";
+import { StudySession } from "../components/organisms/StudySession";
 import { CardBoard } from "../components/organisms/CardBoard";
-import { DomainPanel } from "../components/organisms/DomainPanel";
-import { ProcessingPanel } from "../components/organisms/ProcessingPanel";
+import { WorkspacePanel } from "../components/organisms/WorkspacePanel";
 import { DashboardTemplate } from "../components/templates/DashboardTemplate";
 export function App() {
+  const [mode, setMode] = useState<WorkspaceMode>("study");
   return (
-    <>
-      <AppHeader />
-      <DashboardTemplate sidebar={<DomainPanel />}>
-        <ProcessingPanel />
+    <DashboardTemplate sidebar={<DomainPanel onNavigate={setMode} />}>
+      {mode === "study" ? (
+        <StudySession />
+      ) : mode === "cards" ? (
         <CardBoard />
-      </DashboardTemplate>
-    </>
+      ) : (
+        <WorkspacePanel mode={mode} onComplete={() => setMode("study")} />
+      )}
+    </DashboardTemplate>
   );
 }

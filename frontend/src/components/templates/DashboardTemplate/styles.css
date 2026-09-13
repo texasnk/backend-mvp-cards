@@ -1,0 +1,20 @@
+.layout {
+  display: grid;
+  grid-template-columns: 280px minmax(0, 1fr);
+  min-height: 100vh;
+}
+
+.workspace {
+  padding: var(--space-25) clamp(var(--space-18), 7vw, var(--space-30));
+  overflow: hidden;
+}
+
+@media (max-width: 760px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+
+  .workspace {
+    padding: var(--space-21) var(--space-16);
+  }
+}

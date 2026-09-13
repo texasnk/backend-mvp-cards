@@ -1,11 +1,12 @@
 import { FileUp, Sparkles } from "lucide-react";
 import { useRef, useState } from "react";
-import { useCreateProcessing } from "../../domains/processing/hooks/useCreateProcessing";
-import { useFiltersStore } from "../../store/useFiltersStore";
-import { getErrorMessage } from "../../services/http";
-import type { IProcessingResult } from "../../services/processing/types";
-import { Button } from "../atoms/Button";
-import { Input, Textarea } from "../atoms/Field";
+import { useCreateProcessing } from "../../../domains/processing/hooks/useCreateProcessing";
+import { useFiltersStore } from "../../../store/useFiltersStore";
+import { getErrorMessage } from "../../../services/http";
+import type { IProcessingResult } from "../../../services/processing/types";
+import { Button } from "../../atoms/Button";
+import { Input, Textarea } from "../../atoms/Field";
+import "./styles.css";
 
 export function ProcessingPanel() {
   const [text, setText] = useState("");
@@ -33,7 +34,7 @@ export function ProcessingPanel() {
   }
   return (
     <section className="processing">
-      <div className="processing-copy">
+      <div className="processing_copy">
         <p className="eyebrow">Assistente IA</p>
         <h2>Transforme conteúdo em estudo</h2>
         <p className="muted">
@@ -49,10 +50,10 @@ export function ProcessingPanel() {
           placeholder="Cole aqui o conteúdo que deseja estudar…"
           rows={5}
         />
-        <div className="processing-actions">
+        <div className="processing_actions">
           <input
             ref={fileRef}
-            className="sr-only"
+            className="sr_only"
             type="file"
             accept="application/pdf,image/*"
             onChange={(e) => setFile(e.target.files?.[0])}
@@ -81,10 +82,10 @@ export function ProcessingPanel() {
       {result && (
         <div className="result">
           <div>
-            <p className="card-label">Resumo gerado</p>
+            <p className="card_label">Resumo gerado</p>
             <p>{result.summary}</p>
           </div>
-          <div className="result-meta">
+          <div className="result_meta">
             {result.domain
               ? `Salvo em ${result.domain.name}`
               : result.suggestedDomain

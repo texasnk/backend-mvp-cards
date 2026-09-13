@@ -16,6 +16,11 @@ export interface ICard {
   back: string;
   createdAt: string;
   updatedAt: string;
+  state: "new" | "learning" | "review" | "relearn";
+  dueAt: string;
+  learningStep: number;
+  intervalDays: number;
+  easeFactor: number;
 }
 export interface ICardInput {
   studyDomainId: string;
@@ -31,3 +36,34 @@ export interface ICardFilters {
   pageSize: number;
 }
 export type ICardsPage = IPaginatedResponse<ICard>;
+export type TReviewRating = "again" | "hard" | "good" | "easy";
+export interface IReviewOption {
+  rating: TReviewRating;
+  dueAt: string;
+  intervalDays: number;
+}
+export interface IReviewResult {
+  cardId: string;
+  rating: TReviewRating;
+  previousState: ICard["state"];
+  schedule: Omit<
+    ICard,
+    | "id"
+    | "studyDomainId"
+    | "sourceType"
+    | "approach"
+    | "front"
+    | "back"
+    | "createdAt"
+    | "updatedAt"
+  >;
+}
+export interface IBulkDeleteResult {
+  deletedIds: string[];
+  failures: { id: string; code: string; message: string }[];
+}
+export interface IImportCardsResult {
+  items: ICard[];
+  total: number;
+  failures: { index: number; code: string }[];
+}

@@ -19,3 +19,7 @@ export interface IDomainListParams {
 export interface ICreateDomainInput {
   name: string;
 }
+export interface IBulkDeleteDomainsResult {
+  deletedIds: string[];
+  failures: { id: string; code: string; message: string }[];
+}

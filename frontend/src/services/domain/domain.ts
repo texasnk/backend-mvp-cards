@@ -4,6 +4,7 @@ import type {
   IDomainListParams,
   IPaginatedResponse,
   IStudyDomain,
+  IBulkDeleteDomainsResult,
 } from "./types";
 
 export class DomainService {
@@ -21,6 +22,9 @@ export class DomainService {
   }
   async remove(id: string) {
     await http.delete(`/domains/${id}`);
+  }
+  async removeMany(ids: string[]) {
+    return (await http.delete<IBulkDeleteDomainsResult>("/domains/bulk", { data: { ids } })).data;
   }
 }
 export const domainService = new DomainService();

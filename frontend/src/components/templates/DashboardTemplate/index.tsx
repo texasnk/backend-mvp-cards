@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import "./styles.css";
 export function DashboardTemplate({
   sidebar,
   children,

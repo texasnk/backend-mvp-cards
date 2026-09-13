@@ -1,9 +1,10 @@
 import { Activity, BookOpen } from "lucide-react";
-import { useHealth } from "../../domains/health/hooks/useHealth";
+import { useHealth } from "../../../domains/health/hooks/useHealth";
+import "./styles.css";
 export function AppHeader() {
   const health = useHealth();
   return (
-    <header className="app-header">
+    <header className="app_header">
       <div className="brand">
         <span>
           <BookOpen size={20} />

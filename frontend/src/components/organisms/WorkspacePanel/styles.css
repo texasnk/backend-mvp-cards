@@ -1,0 +1,51 @@
+.workspace_panel {
+  max-width: 680px;
+  padding: var(--space-22);
+  margin: 42px auto;
+  background: var(--color-surface-raised);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-3xl);
+}
+
+.workspace_panel > svg {
+  margin-bottom: 18px;
+  color: var(--color-primary);
+}
+
+.workspace_panel h1 {
+  margin-bottom: 7px;
+}
+
+.workspace_panel form {
+  display: grid;
+  gap: 13px;
+  margin-top: 24px;
+}
+
+.workspace_panel code {
+  color: var(--color-primary);
+}
+
+.workspace_upload {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: var(--space-10);
+  color: var(--color-text-info);
+  border: 1px dashed var(--color-border-dashed-accent);
+  border-radius: var(--radius-lg);
+  font-size: 13px;
+}
+
+.workspace_upload input {
+  max-width: 210px;
+  color: var(--color-text-muted);
+}
+
+.import_divider {
+  margin: 0;
+  color: var(--color-text-subtle);
+  font-size: 12px;
+  text-align: center;
+}
